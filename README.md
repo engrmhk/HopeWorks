@@ -1,4 +1,4 @@
-# HopeWorks Core Client
+# HopeWorks Church
 
 The forkable per-client church management application. Deploy one instance per Synod (with multiple churches) or Independent Church. Tagged releases (`v0.1.0`, etc.) are forked for each client.
 
