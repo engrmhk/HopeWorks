@@ -19,6 +19,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_KEY" value="base64:2fl+KtvkphAbVt2y3E8G9aBdG3N2j8xR7mL4pQ6sY1c="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
@@ -32,7 +33,7 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
-        <env name="CONTROL_PLANE_URL" value="http://localhost:8000"/>
-        <env name="CONTROL_PLANE_API_KEY" value="test-api-key"/>
+        <env name="LICENSE_JWT_SECRET" value="testing-jwt-secret-must-be-at-least-32-chars-long"/>
+        <env name="LICENSE_JWT_TTL_HOURS" value="48"/>
     </php>
 </phpunit>

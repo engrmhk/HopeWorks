@@ -1,82 +1,58 @@
-# HopeWorks CMS
+# HopeWorks Control Plane
 
-HopeWorks is a multi-tenant church management platform composed of two Laravel applications:
+Hope Works' internal admin application. There is only ever **one instance** of this app — it is never forked or given to a client. It manages the directory of all synods and churches, billing/subscriptions, licensing, and cross-client reporting.
 
-| Application | Directory | Purpose |
-|-------------|-----------|---------|
-| **Control Plane** | [`control-plane/`](control-plane/) | Hope Works' internal admin app — manages synods, churches, billing, licensing, and cross-client reporting. There is only ever one instance. |
-| **Core Client** | [`core-client/`](core-client/) | The forkable per-client app deployed once per Synod or Independent Church. Tagged releases (`v0.1.0`, etc.) are forked for each client. |
+**Related repo:** [HopeWorks-CoreClient](https://github.com/engrmhk/HopeWorks-CoreClient) — the forkable per-client application deployed once per Synod or Independent Church.
 
-Both apps use **Laravel 12**, **PHP 8.4+**, **FilamentPHP v4**, **PostgreSQL**, and **Redis**.
+> **Split note:** Core Client code lives on the [`core-client`](https://github.com/engrmhk/HopeWorks/tree/core-client) branch until the separate `HopeWorks-CoreClient` repository is created. To finalize the split, create an empty `HopeWorks-CoreClient` repo on GitHub and run:
+> ```bash
+> git clone -b core-client https://github.com/engrmhk/HopeWorks.git HopeWorks-CoreClient
+> cd HopeWorks-CoreClient
+> git checkout -B main
+> git remote set-url origin https://github.com/engrmhk/HopeWorks-CoreClient.git
+> git push -u origin main
+> ```
+
+## Stack
+
+- Laravel 12, PHP 8.4+
+- FilamentPHP v4 (admin UI)
+- PostgreSQL, Redis
+- Laravel Sanctum (API auth from client instances)
 
 ## Quick Start
 
-### Prerequisites
-
-- PHP 8.4+
-- Composer
-- PostgreSQL 16+
-- Redis
-
-### Control Plane
-
 ```bash
-cd control-plane
-cp .env.example .env   # configure PostgreSQL credentials
 composer install
+cp .env.example .env
 php artisan key:generate
+# Configure PostgreSQL in .env, then:
 php artisan migrate --seed
-php artisan serve      # http://localhost:8000
+php artisan serve
 ```
 
 Filament admin panel: `/admin`  
 Default super admin: `admin@hopeworks.test` / `password`
 
-### Core Client
+## API Endpoints
 
-```bash
-cd core-client
-cp .env.example .env   # configure PostgreSQL + CONTROL_PLANE_URL
-composer install
-php artisan key:generate
-php artisan migrate --seed
-php artisan serve --port=8001
-```
-
-Filament admin panel: `/admin`  
-Default church admin: `admin@hopeworks.test` / `password`
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/v1/heartbeat` | Client instances call this to sync license status (Bearer API key) |
+| `POST` | `/api/v1/webhooks/stripe` | Payment gateway webhook receiver |
 
 ## Running Tests
 
 ```bash
-cd control-plane && php artisan test   # 8 tests
-cd core-client  && php artisan test   # 18 tests
+php artisan test
 ```
 
-## Architecture Notes
+## Phase 0 Features
 
-- **Build order:** Control Plane must exist before Core Client instances can sync licenses via `POST /api/v1/heartbeat`.
-- **Client customization:** All per-client changes in Core Client go under `app/Custom/` — see [`core-client/CONTRIBUTING.md`](core-client/CONTRIBUTING.md).
-- **Modules:** Feature modules live under `app/Modules/{ModuleName}/` with a `module.json` manifest and are gated through `ModuleRegistry`.
-
-## Phase 0 + Phase 1 Status
-
-### Control Plane (Part A)
-- [x] Synod/Church directory CRUD via Filament
-- [x] Plan management with module eligibility
-- [x] License key issuance + `POST /api/v1/heartbeat`
-- [x] Payment enforcement state machine (`active → grace → suspended`)
-- [x] Change Affiliation action with audit logging
-- [x] Tenant provisioning trigger (stub)
-- [x] Stripe webhook receiver (stub)
-- [x] Global reporting dashboard widget
-
-### Core Client (Part B)
-- [x] Module Registry with `@module` directive and route middleware
-- [x] Dynamic RBAC via spatie/laravel-permission
-- [x] License/heartbeat sync command
-- [x] Payment enforcement middleware
-- [x] Custom Fields engine
-- [x] Multi-level church scoping
-- [x] Audit logging
-- [x] Authentication, onboarding wizard, branding, admin panel shell
+- Synod/Church directory CRUD via Filament
+- Plan management with module eligibility
+- License key issuance (signed JWT)
+- Payment enforcement state machine (`active → grace → suspended`)
+- Change Affiliation action with audit logging
+- Tenant provisioning trigger (stub)
+- Global reporting dashboard widget
