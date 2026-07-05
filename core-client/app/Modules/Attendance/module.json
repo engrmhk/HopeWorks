@@ -1,0 +1,10 @@
+{
+    "key": "attendance",
+    "name": "Attendance",
+    "description": "Track and manage attendance records for church services and events.",
+    "dependencies": [],
+    "permissions": [
+        "attendance.view",
+        "attendance.manage"
+    ]
+}
