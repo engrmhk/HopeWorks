@@ -2,16 +2,7 @@
 
 Hope Works' internal admin application. There is only ever **one instance** of this app — it is never forked or given to a client. It manages the directory of all synods and churches, billing/subscriptions, licensing, and cross-client reporting.
 
-**Related repo:** [HopeWorks-CoreClient](https://github.com/engrmhk/HopeWorks-CoreClient) — the forkable per-client application deployed once per Synod or Independent Church.
-
-> **Split note:** Core Client code lives on the [`core-client`](https://github.com/engrmhk/HopeWorks/tree/core-client) branch until the separate `HopeWorks-CoreClient` repository is created. To finalize the split, create an empty `HopeWorks-CoreClient` repo on GitHub and run:
-> ```bash
-> git clone -b core-client https://github.com/engrmhk/HopeWorks.git HopeWorks-CoreClient
-> cd HopeWorks-CoreClient
-> git checkout -B main
-> git remote set-url origin https://github.com/engrmhk/HopeWorks-CoreClient.git
-> git push -u origin main
-> ```
+**Related repo:** [HopeWorks-church](https://github.com/engrmhk/HopeWorks-church) — the forkable per-client application deployed once per Synod or Independent Church.
 
 ## Stack
 
