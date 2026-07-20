@@ -1,0 +1,173 @@
+:root {
+  /* Core surfaces */
+  --hw-sidebar-bg: #1B2942;
+  --hw-sidebar-active: #2B4066;
+  --hw-sidebar-text: #FFFFFF;
+  --hw-sidebar-text-muted: #8C9BB5;
+  --hw-canvas-bg: #F4F6F9;
+  --hw-card-bg: #FFFFFF;
+  --hw-card-border: #E5E7EB;
+  --hw-card-radius: 10px;
+  --hw-eyebrow-text: #7A88A3;
+  --hw-text: #0F172A;
+  --hw-text-muted: #64748B;
+  --hw-chart-label: #475569;
+  --hw-chart-grid: #E2E8F0;
+  --hw-chart-tooltip-bg: #FFFFFF;
+  --hw-chart-tooltip-text: #0F172A;
+  --hw-input-bg: #FFFFFF;
+  --hw-input-border: #CBD5E1;
+  --hw-overlay: rgba(15, 23, 42, 0.45);
+
+  /* Primary actions */
+  --hw-btn-primary: #3E5C82;
+  --hw-btn-primary-hover: #33496A;
+  --hw-btn-success: #16A34A;
+  --hw-btn-navy: #1B2942;
+  --hw-btn-danger-outline: #DC2626;
+
+  /* Semantic status palette — same meaning in light and dark */
+  --hw-status-active: #22A06B;
+  --hw-status-potential: #8B5CF6;
+  --hw-status-inactive: #D97706;
+  --hw-status-left: #DC2626;
+  --hw-status-neutral: #3B82F6;
+
+  /* Qualitative chart palette */
+  --hw-chart-1: #1B2942;
+  --hw-chart-2: #3B82F6;
+  --hw-chart-3: #14B8A6;
+  --hw-chart-4: #8B5CF6;
+  --hw-chart-5: #EC4899;
+  --hw-chart-6: #F59E0B;
+  --hw-chart-7: #DC2626;
+  --hw-chart-8: #22A06B;
+  --hw-chart-9: #64748B;
+}
+
+.dark {
+  --hw-sidebar-bg: #0F172A;
+  --hw-sidebar-active: #1E293B;
+  --hw-sidebar-text: #F8FAFC;
+  --hw-sidebar-text-muted: #94A3B8;
+  --hw-canvas-bg: #0B1220;
+  --hw-card-bg: #152033;
+  --hw-card-border: #243247;
+  --hw-eyebrow-text: #94A3B8;
+  --hw-text: #F1F5F9;
+  --hw-text-muted: #94A3B8;
+  --hw-chart-label: #CBD5E1;
+  --hw-chart-grid: #243247;
+  --hw-chart-tooltip-bg: #1E293B;
+  --hw-chart-tooltip-text: #F8FAFC;
+  --hw-input-bg: #0F172A;
+  --hw-input-border: #334155;
+  --hw-overlay: rgba(2, 6, 23, 0.65);
+
+  --hw-btn-primary: #5B7AA5;
+  --hw-btn-primary-hover: #6B8BB8;
+  --hw-btn-navy: #E2E8F0;
+
+  /* Slightly brighter status colors for dark-surface contrast — same semantic mapping */
+  --hw-status-active: #34D399;
+  --hw-status-potential: #A78BFA;
+  --hw-status-inactive: #FBBF24;
+  --hw-status-left: #F87171;
+  --hw-status-neutral: #60A5FA;
+
+  --hw-chart-1: #94A3B8;
+  --hw-chart-2: #60A5FA;
+  --hw-chart-3: #2DD4BF;
+  --hw-chart-4: #A78BFA;
+  --hw-chart-5: #F472B6;
+  --hw-chart-6: #FBBF24;
+  --hw-chart-7: #F87171;
+  --hw-chart-8: #34D399;
+  --hw-chart-9: #94A3B8;
+}
+
+/* Filament sidebar */
+.fi-sidebar {
+  background-color: var(--hw-sidebar-bg) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-button,
+.fi-sidebar .fi-sidebar-group-label,
+.fi-sidebar .fi-sidebar-item-label {
+  color: var(--hw-sidebar-text-muted);
+}
+
+.fi-sidebar .fi-sidebar-item-button:hover,
+.fi-sidebar .fi-active .fi-sidebar-item-button {
+  background-color: var(--hw-sidebar-active) !important;
+  color: var(--hw-sidebar-text) !important;
+}
+
+.fi-main,
+.fi-body {
+  background-color: var(--hw-canvas-bg);
+}
+
+.fi-wi-stats-overview-stat,
+.fi-section,
+.fi-ta-ctn,
+.hw-kpi-card,
+.hw-card {
+  background-color: var(--hw-card-bg);
+  border-radius: var(--hw-card-radius);
+  border-color: var(--hw-card-border);
+  color: var(--hw-text);
+}
+
+.hw-kpi-card {
+  border: 1px solid var(--hw-card-border);
+  border-left: 4px solid var(--hw-status-neutral) !important;
+  background: var(--hw-card-bg) !important;
+}
+
+.hw-kpi-card[data-status="active"] { border-left-color: var(--hw-status-active) !important; }
+.hw-kpi-card[data-status="potential"] { border-left-color: var(--hw-status-potential) !important; }
+.hw-kpi-card[data-status="inactive"] { border-left-color: var(--hw-status-inactive) !important; }
+.hw-kpi-card[data-status="left"] { border-left-color: var(--hw-status-left) !important; }
+.hw-kpi-card[data-status="neutral"] { border-left-color: var(--hw-status-neutral) !important; }
+
+.hw-eyebrow {
+  color: var(--hw-eyebrow-text);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hw-muted {
+  color: var(--hw-text-muted);
+}
+
+.hw-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.hw-chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--hw-chart-label);
+  white-space: nowrap;
+}
+
+.hw-chart-legend-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+}
+
+.hw-chart-legend-count {
+  font-weight: 700;
+  color: var(--hw-text);
+}
