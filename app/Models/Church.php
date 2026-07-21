@@ -14,11 +14,15 @@ class Church extends Model
     protected $fillable = [
         'synod_id',
         'name',
+        'contact_email',
+        'billing_email',
         'status',
         'subdomain',
         'custom_domain',
         'instance_url',
         'instance_api_key_hash',
+        'data_retention_status',
+        'data_retention_until',
     ];
 
     protected function casts(): array
@@ -58,6 +62,16 @@ class Church extends Model
     public function licenseKeys(): HasMany
     {
         return $this->hasMany(LicenseKey::class);
+    }
+
+    public function healthSnapshots(): HasMany
+    {
+        return $this->hasMany(ClientHealthSnapshot::class);
+    }
+
+    public function latestHealthSnapshot(): HasOne
+    {
+        return $this->hasOne(ClientHealthSnapshot::class)->latestOfMany();
     }
 
     public function setInstanceApiKey(string $plainKey): void

@@ -14,6 +14,7 @@ class Plan extends Model
         'storage_limit_gb',
         'user_limit',
         'module_eligibility',
+        'stripe_price_id',
     ];
 
     protected function casts(): array

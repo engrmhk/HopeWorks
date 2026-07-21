@@ -22,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(AffiliationService::class);
         $this->app->singleton(TenantMigrationService::class);
         $this->app->singleton(TenantProvisioningService::class);
+        $this->app->singleton(\App\Services\StripeBillingService::class);
+        $this->app->singleton(\App\Services\BillingNotificationService::class);
+        $this->app->singleton(\App\Services\Communications\MessageProviderManager::class);
     }
 
     public function boot(): void

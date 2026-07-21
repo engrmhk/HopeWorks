@@ -41,6 +41,10 @@ class PlanForm
                     ->valueLabel('Enabled')
                     ->addActionLabel('Add module')
                     ->reorderable(),
+                TextInput::make('stripe_price_id')
+                    ->label('Stripe Price ID')
+                    ->helperText('price_… from Stripe Dashboard. Required for Checkout.')
+                    ->maxLength(255),
             ]);
     }
 }

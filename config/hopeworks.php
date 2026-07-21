@@ -12,6 +12,9 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
         'currency' => env('STRIPE_CURRENCY', 'USD'),
         'dunning_max_attempts' => (int) env('STRIPE_DUNNING_MAX_ATTEMPTS', 3),
+        'checkout_success_url' => env('STRIPE_CHECKOUT_SUCCESS_URL', env('APP_URL').'/admin/subscriptions?checkout=success'),
+        'checkout_cancel_url' => env('STRIPE_CHECKOUT_CANCEL_URL', env('APP_URL').'/admin/subscriptions?checkout=cancelled'),
+        'portal_return_url' => env('STRIPE_PORTAL_RETURN_URL', env('APP_URL').'/admin'),
     ],
 
     'billing' => [
