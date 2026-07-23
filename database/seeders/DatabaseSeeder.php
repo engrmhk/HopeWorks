@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'HopeWorks Admin',
                 'password' => 'password',
+                'is_super_admin' => true,
+                'permissions' => [User::PERMISSION_RECORD_MANUAL_PAYMENT],
             ],
         );
 

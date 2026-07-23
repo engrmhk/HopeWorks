@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Subscriptions\Pages;
 
+use App\Filament\Actions\RecordManualPaymentAction;
 use App\Filament\Actions\StartStripeCheckoutAction;
 use App\Filament\Resources\Subscriptions\SubscriptionResource;
 use Filament\Actions\DeleteAction;
@@ -14,6 +15,7 @@ class EditSubscription extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            RecordManualPaymentAction::make(),
             StartStripeCheckoutAction::make(),
             DeleteAction::make(),
         ];
