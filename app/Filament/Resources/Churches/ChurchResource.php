@@ -35,7 +35,9 @@ class ChurchResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            RelationManagers\LicenseKeysRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\ChurchStatus;
 use App\Services\LicenseKeyService;
 use Closure;
 use Illuminate\Http\Request;
@@ -25,6 +26,13 @@ class AuthenticateChurchApiKey
 
         if ($church === null) {
             return response()->json(['message' => 'Invalid API key.'], 401);
+        }
+
+        if ($church->status === ChurchStatus::Inactive) {
+            return response()->json([
+                'message' => 'This church instance is deactivated.',
+                'church_status' => $church->status->value,
+            ], 403);
         }
 
         $request->attributes->set('church', $church);

@@ -32,12 +32,15 @@ class ProvisionNewClientAction
                     ->helperText('Used when no existing synod is selected.'),
             ])
             ->action(function (array $data, TenantProvisioningService $provisioningService): void {
-                $church = $provisioningService->provisionNewClient($data);
+                $result = $provisioningService->provisionNewClient($data);
+                $church = $result['church'];
+                $apiKey = $result['api_key'];
 
                 Notification::make()
                     ->title('Client provisioned')
-                    ->body("Subdomain: {$church->subdomain}")
+                    ->body("Subdomain: {$church->subdomain}\n\nInstance API key (copy to church .env):\n{$apiKey}")
                     ->success()
+                    ->persistent()
                     ->send();
             });
     }

@@ -12,8 +12,17 @@ class TenantExportJob extends Model
         'scope_id',
         'requested_by',
         'status',
+        'correlation_id',
         'file_path',
+        'metadata',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'metadata' => 'array',
+        ];
+    }
 
     public function requestedBy(): BelongsTo
     {

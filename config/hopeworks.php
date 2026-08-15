@@ -46,5 +46,16 @@ return [
         'staff_notify_to' => env('SUPPORT_STAFF_NOTIFY_TO'),
     ],
 
+    /*
+    | Subscription status evaluation (active → grace → suspended).
+    | The artisan command subscriptions:evaluate-statuses is scheduled every minute
+    | in routes/console.php. See docs/SUBSCRIPTION_STATUS_EVALUATION.md.
+    */
+    'subscription_enforcement' => [
+        'schedule_expression' => '* * * * *', // every minute via Laravel Schedule::everyMinute()
+        'schedule_human' => 'every minute',
+        'command' => 'subscriptions:evaluate-statuses',
+    ],
+
     'schema_version' => env('HOPEWORKS_SCHEMA_VERSION', '1.0.0'),
 ];

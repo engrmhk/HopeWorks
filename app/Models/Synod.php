@@ -10,6 +10,7 @@ class Synod extends Model
 {
     protected $fillable = [
         'name',
+        'shared_subdomain',
         'region',
         'status',
         'contact_name',

@@ -31,8 +31,11 @@ class ChurchesTable
                     ->label('Subscription')
                     ->badge()
                     ->placeholder('None'),
-                TextColumn::make('instance_url')
-                    ->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('instance_api_key_hash')
+                    ->label('API Key')
+                    ->formatStateUsing(fn (?string $state): string => $state ? 'Configured' : 'Missing')
+                    ->badge()
+                    ->color(fn (?string $state): string => $state ? 'success' : 'danger'),
             ])
             ->filters([])
             ->recordActions([

@@ -64,6 +64,10 @@ class HeartbeatTest extends TestCase
                 'enforcement_policy',
                 'license_key',
                 'expires_at',
+                'license_expires_at',
+                'current_period_end',
+                'grace_started_at',
+                'grace_period_days',
                 'church_id',
                 'plan_id',
             ])
@@ -72,11 +76,22 @@ class HeartbeatTest extends TestCase
                 'church_id' => $this->church->id,
             ]);
 
+        $this->assertSame(
+            $this->subscription->fresh()->current_period_end->toIso8601String(),
+            $response->json('current_period_end'),
+        );
+
         $licenseKeyService = app(LicenseKeyService::class);
         $payload = $licenseKeyService->decode($response->json('license_key'));
 
         $this->assertSame($this->church->id, $payload->church_id);
         $this->assertSame($this->subscription->plan_id, $payload->plan_id);
+        $this->assertSame(
+            $this->subscription->fresh()->current_period_end->toIso8601String(),
+            $payload->current_period_end,
+        );
+        // JWT expires_at is a short re-sync TTL, not the billing period end.
+        $this->assertNotSame($response->json('current_period_end'), $response->json('expires_at'));
     }
 
     public function test_suspended_after_grace_period_elapsed(): void

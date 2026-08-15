@@ -13,6 +13,8 @@ class ControlPlaneAuditLog extends Model
     protected $fillable = [
         'actor_id',
         'action',
+        'high_visibility',
+        'correlation_id',
         'subject_type',
         'subject_id',
         'before',
@@ -23,9 +25,15 @@ class ControlPlaneAuditLog extends Model
     protected function casts(): array
     {
         return [
+            'high_visibility' => 'boolean',
             'before' => 'array',
             'after' => 'array',
         ];
+    }
+
+    public function scopeHighVisibility($query)
+    {
+        return $query->where('high_visibility', true);
     }
 
     public function actor(): BelongsTo

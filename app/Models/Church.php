@@ -21,6 +21,7 @@ class Church extends Model
         'custom_domain',
         'instance_url',
         'instance_api_key_hash',
+        'last_heartbeat_at',
         'data_retention_status',
         'data_retention_until',
     ];
@@ -29,6 +30,8 @@ class Church extends Model
     {
         return [
             'status' => ChurchStatus::class,
+            'last_heartbeat_at' => 'datetime',
+            'data_retention_until' => 'datetime',
         ];
     }
 

@@ -15,6 +15,8 @@ class AuditLogService
         ?array $before = null,
         ?array $after = null,
         ?string $ip = null,
+        bool $highVisibility = false,
+        ?string $correlationId = null,
     ): ControlPlaneAuditLog {
         $actorId = match (true) {
             $actor instanceof Authenticatable => $actor->getAuthIdentifier(),
@@ -35,6 +37,8 @@ class AuditLogService
         return ControlPlaneAuditLog::create([
             'actor_id' => $actorId,
             'action' => $action,
+            'high_visibility' => $highVisibility,
+            'correlation_id' => $correlationId,
             'subject_type' => $subjectType,
             'subject_id' => $subjectId,
             'before' => $before,

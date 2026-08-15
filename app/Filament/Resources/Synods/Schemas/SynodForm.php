@@ -16,6 +16,10 @@ class SynodForm
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('shared_subdomain')
+                    ->label('Shared Subdomain')
+                    ->maxLength(255)
+                    ->helperText('Default address for all churches under this Synod when they have no church-specific subdomain.'),
                 TextInput::make('region')
                     ->maxLength(255),
                 Select::make('status')

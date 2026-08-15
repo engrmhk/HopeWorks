@@ -19,7 +19,7 @@ class LicenseKeyService
         $subscription->loadMissing(['plan', 'church', 'synod']);
 
         $church = $subscription->church;
-        $expiresAt = now()->addHours(config('license.jwt_ttl_hours'));
+        $licenseExpiresAt = now()->addHours(config('license.jwt_ttl_hours'));
 
         $payload = [
             'church_id' => $church?->id,
@@ -27,10 +27,16 @@ class LicenseKeyService
             'plan_id' => $subscription->plan_id,
             'enabled_modules' => $subscription->plan?->module_eligibility ?? [],
             'status' => $subscription->status->value,
-            'expires_at' => $expiresAt->toIso8601String(),
+            // JWT / re-sync TTL — NOT the billing period end.
+            'expires_at' => $licenseExpiresAt->toIso8601String(),
+            'license_expires_at' => $licenseExpiresAt->toIso8601String(),
+            // Billing subscription period (what staff edit on the Control Plane).
+            'current_period_end' => $subscription->current_period_end?->toIso8601String(),
+            'grace_started_at' => $subscription->grace_started_at?->toIso8601String(),
+            'grace_period_days' => $subscription->grace_period_days,
             'enforcement_policy' => $subscription->enforcement_policy->value,
             'iat' => now()->timestamp,
-            'exp' => $expiresAt->timestamp,
+            'exp' => $licenseExpiresAt->timestamp,
         ];
 
         $jwt = JWT::encode($payload, config('license.jwt_secret'), 'HS256');
@@ -40,7 +46,7 @@ class LicenseKeyService
             'synod_id' => $subscription->synod_id ?? $church?->synod_id,
             'signed_jwt' => $jwt,
             'issued_at' => now(),
-            'expires_at' => $expiresAt,
+            'expires_at' => $licenseExpiresAt,
         ]);
     }
 
@@ -93,5 +99,22 @@ class LicenseKeyService
         }
 
         return $payload;
+    }
+
+    public function revoke(LicenseKey $licenseKey): void
+    {
+        if ($licenseKey->revoked_at !== null) {
+            return;
+        }
+
+        $licenseKey->update(['revoked_at' => now()]);
+    }
+
+    public function revokeAllForChurch(Church $church): int
+    {
+        return LicenseKey::query()
+            ->where('church_id', $church->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
     }
 }

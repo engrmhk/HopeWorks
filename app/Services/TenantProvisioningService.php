@@ -14,12 +14,14 @@ class TenantProvisioningService
 {
     public function __construct(
         protected AuditLogService $auditLogService,
+        protected ChurchInstanceAccessService $churchInstanceAccessService,
     ) {}
 
     /**
      * @param  array{name: string, synod_id?: int|null, synod_name?: string|null, plan_id?: int|null}  $data
+     * @return array{church: Church, api_key: string}
      */
-    public function provisionNewClient(array $data): Church
+    public function provisionNewClient(array $data): array
     {
         $synodId = $data['synod_id'] ?? null;
 
@@ -32,7 +34,6 @@ class TenantProvisioningService
         }
 
         $subdomain = Church::generateSubdomain($data['name']);
-        $apiKey = Church::generateApiKey();
 
         $church = Church::create([
             'synod_id' => $synodId,
@@ -40,8 +41,9 @@ class TenantProvisioningService
             'status' => ChurchStatus::Provisioning,
             'subdomain' => $subdomain,
             'instance_url' => "https://{$subdomain}.hopeworks.app",
-            'instance_api_key_hash' => Church::hashApiKey($apiKey),
         ]);
+
+        $apiKey = $this->churchInstanceAccessService->generateApiKey($church);
 
         $this->callProvisioningWebhook($church, $apiKey);
 
@@ -58,7 +60,10 @@ class TenantProvisioningService
             ip: request()?->ip(),
         );
 
-        return $church->fresh(['synod']);
+        return [
+            'church' => $church->fresh(['synod']),
+            'api_key' => $apiKey,
+        ];
     }
 
     protected function callProvisioningWebhook(Church $church, string $apiKey): void
