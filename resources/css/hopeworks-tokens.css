@@ -43,6 +43,11 @@
   --hw-chart-7: #DC2626;
   --hw-chart-8: #22A06B;
   --hw-chart-9: #64748B;
+
+  --hw-login-bg: #E8EEF6;
+  --hw-login-btn: #3E5C82;
+  --hw-login-btn-text: #FFFFFF;
+  --hw-login-bg-image: none;
 }
 
 .dark {
@@ -84,6 +89,10 @@
   --hw-chart-7: #F87171;
   --hw-chart-8: #34D399;
   --hw-chart-9: #94A3B8;
+
+  --hw-login-bg: #0B1220;
+  --hw-login-btn: var(--hw-btn-primary);
+  --hw-login-btn-text: #FFFFFF;
 }
 
 /* Filament sidebar */
@@ -171,3 +180,75 @@
   font-weight: 700;
   color: var(--hw-text);
 }
+
+.fi-simple-layout {
+  position: relative;
+  min-height: 100dvh;
+  isolation: isolate;
+  background-color: var(--hw-login-bg, var(--hw-canvas-bg));
+  background-image:
+    radial-gradient(
+      1200px 600px at 12% -10%,
+      color-mix(in srgb, var(--hw-login-btn, var(--hw-btn-primary)) 22%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--hw-login-btn, var(--hw-btn-primary)) 10%, var(--hw-login-bg, var(--hw-canvas-bg))) 0%,
+      var(--hw-login-bg, var(--hw-canvas-bg)) 48%,
+      color-mix(in srgb, var(--hw-sidebar-bg) 8%, var(--hw-login-bg, var(--hw-canvas-bg))) 100%
+    );
+}
+
+.fi-simple-layout::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--hw-login-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.18;
+}
+
+.fi-simple-main-ctn {
+  position: relative;
+  z-index: 1;
+}
+
+.fi-simple-main {
+  max-width: 26rem !important;
+  border-radius: 1.15rem !important;
+  background: var(--hw-card-bg) !important;
+}
+
+.fi-simple-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.fi-simple-header .fi-logo,
+.fi-simple-header .fi-logo img {
+  height: 2.75rem !important;
+  width: auto;
+  max-width: 11rem;
+  object-fit: contain;
+}
+
+.fi-simple-header-heading {
+  color: var(--hw-text) !important;
+}
+
+.fi-simple-header-subheading {
+  color: var(--hw-text-muted) !important;
+}
+
+.fi-simple-page .fi-btn-primary,
+.fi-simple-page button.fi-btn[type="submit"] {
+  background-color: var(--hw-login-btn, var(--hw-btn-primary)) !important;
+  color: var(--hw-login-btn-text, #fff) !important;
+}
+

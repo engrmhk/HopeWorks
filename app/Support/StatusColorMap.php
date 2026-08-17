@@ -8,7 +8,17 @@ namespace App\Support;
  */
 class StatusColorMap
 {
+    public const SIDEBAR_BG = '#1B2942';
+
     public const BTN_PRIMARY = '#3E5C82';
+
+    public const BTN_PRIMARY_HOVER = '#33496A';
+
+    public const BTN_SUCCESS = '#16A34A';
+
+    public const CANVAS_BG = '#F4F6F9';
+
+    public const CARD_BG = '#FFFFFF';
 
     public const ACTIVE = '#22A06B';
 
@@ -22,17 +32,42 @@ class StatusColorMap
 
     public static function defaultThemeColor(): string
     {
-        return self::BTN_PRIMARY;
+        return self::resolvedStatusColors()['primary'];
     }
 
     public static function semantic(string $key): string
     {
+        $colors = self::resolvedStatusColors();
+
         return match (strtolower($key)) {
-            'active', 'success' => self::ACTIVE,
-            'potential' => self::POTENTIAL,
-            'inactive', 'warning', 'grace' => self::INACTIVE,
-            'left', 'danger', 'suspended' => self::LEFT,
-            default => self::NEUTRAL,
+            'active', 'success' => $colors['active'],
+            'potential' => $colors['potential'],
+            'inactive', 'warning', 'grace' => $colors['inactive'],
+            'left', 'danger', 'suspended' => $colors['left'],
+            default => $colors['neutral'],
         };
+    }
+
+    /**
+     * @return array{active: string, potential: string, inactive: string, left: string, neutral: string, success: string, warning: string, danger: string, accent: string, primary: string}
+     */
+    public static function resolvedStatusColors(): array
+    {
+        try {
+            return app(\App\Services\Themes\ThemeCompiler::class)->statusColors();
+        } catch (\Throwable) {
+            return [
+                'active' => self::ACTIVE,
+                'potential' => self::POTENTIAL,
+                'inactive' => self::INACTIVE,
+                'left' => self::LEFT,
+                'neutral' => self::NEUTRAL,
+                'success' => self::ACTIVE,
+                'warning' => self::INACTIVE,
+                'danger' => self::LEFT,
+                'accent' => self::POTENTIAL,
+                'primary' => self::BTN_PRIMARY,
+            ];
+        }
     }
 }

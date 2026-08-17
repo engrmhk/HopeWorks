@@ -13,13 +13,15 @@ class InvoicePdfService
         $invoice->load(['subscription.church', 'subscription.plan']);
         $church = $invoice->subscription?->church;
         $plan = $invoice->subscription?->plan;
+        $branding = app(\App\Services\Themes\ThemeCompiler::class)->resolveForPdf();
 
         $html = View::make('billing.invoice-pdf', [
             'invoice' => $invoice,
             'church' => $church,
             'plan' => $plan,
-            'brandName' => 'Hope Works',
-            'themeColor' => '#d97706',
+            'brandName' => $branding['app_name'] ?? 'Hope Works',
+            'themeColor' => $branding['primary'] ?? '#3E5C82',
+            'footerText' => $branding['footer_text'] ?? '',
         ])->render();
 
         $path = 'invoices/'.$invoice->id.'/invoice-'.$invoice->id.'.html';

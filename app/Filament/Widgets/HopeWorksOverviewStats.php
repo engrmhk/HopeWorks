@@ -11,7 +11,16 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class HopeWorksOverviewStats extends StatsOverviewWidget
 {
-    protected ?string $heading = 'HopeWorks Control Plane';
+    protected function getHeading(): ?string
+    {
+        try {
+            $name = app(\App\Services\Themes\ThemeResolver::class)->resolvedConfig()['identity']['app_name'] ?? null;
+        } catch (\Throwable) {
+            $name = null;
+        }
+
+        return filled($name) ? (string) $name : 'Hope Works Control Plane';
+    }
 
     protected function getStats(): array
     {

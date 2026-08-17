@@ -30,7 +30,7 @@
     </div>
 
     <div class="footer">
-        Hope Works Platform Billing — generated {{ now()->toDateTimeString() }}
+        {{ filled($footerText ?? null) ? $footerText : 'Hope Works Platform Billing' }} — generated {{ now()->toDateTimeString() }}
     </div>
 </body>
 </html>
