@@ -78,7 +78,7 @@ class ChurchForm
                     ]),
                 Section::make('Church connection')
                     ->icon('heroicon-o-key')
-                    ->description('Copy into church Settings → System. Generate the Instance API key here. Generate or paste the shared JWT secret here (saved in Control Plane, not .env).')
+                    ->description('Paste into church Settings → System.')
                     ->visible(fn (?Church $record): bool => $record !== null)
                     ->columnSpanFull()
                     ->schema([

@@ -21,6 +21,7 @@ class Church extends Model
         'custom_domain',
         'instance_url',
         'instance_api_key_hash',
+        'instance_api_key',
         'last_heartbeat_at',
         'data_retention_status',
         'data_retention_until',
@@ -30,6 +31,7 @@ class Church extends Model
     {
         return [
             'status' => ChurchStatus::class,
+            'instance_api_key' => 'encrypted',
             'last_heartbeat_at' => 'datetime',
             'data_retention_until' => 'datetime',
         ];
@@ -80,7 +82,16 @@ class Church extends Model
     public function setInstanceApiKey(string $plainKey): void
     {
         $this->instance_api_key_hash = self::hashApiKey($plainKey);
+        $this->instance_api_key = $plainKey;
         $this->save();
+    }
+
+    public function clearInstanceApiKey(): void
+    {
+        $this->forceFill([
+            'instance_api_key_hash' => null,
+            'instance_api_key' => null,
+        ])->save();
     }
 
     public function verifyInstanceApiKey(string $plainKey): bool

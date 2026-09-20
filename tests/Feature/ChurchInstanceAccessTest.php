@@ -5,12 +5,15 @@ namespace Tests\Feature;
 use App\Enums\ChurchStatus;
 use App\Enums\EnforcementPolicy;
 use App\Enums\SubscriptionStatus;
+use App\Filament\Resources\Churches\Pages\EditChurch;
 use App\Models\Church;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\Synod;
+use App\Models\User;
 use App\Services\ChurchInstanceAccessService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ChurchInstanceAccessTest extends TestCase
@@ -33,12 +36,14 @@ class ChurchInstanceAccessTest extends TestCase
         $church->refresh();
         $this->assertTrue($service->hasApiKey($church));
         $this->assertTrue($church->verifyInstanceApiKey($plainKey));
+        $this->assertSame($plainKey, $church->instance_api_key);
 
         $service->revokeApiKey($church);
 
         $church->refresh();
         $this->assertFalse($service->hasApiKey($church));
         $this->assertFalse($church->verifyInstanceApiKey($plainKey));
+        $this->assertNull($church->instance_api_key);
     }
 
     public function test_rotate_api_key_revokes_existing_licenses(): void
@@ -121,5 +126,23 @@ class ChurchInstanceAccessTest extends TestCase
             ->assertJson([
                 'church_status' => ChurchStatus::Inactive->value,
             ]);
+    }
+
+    public function test_edit_church_masks_api_key_and_can_reveal_from_storage(): void
+    {
+        $admin = User::factory()->create(['is_super_admin' => true]);
+        $church = Church::create([
+            'name' => 'Key Church',
+            'subdomain' => 'key-church',
+        ]);
+
+        $plainKey = app(ChurchInstanceAccessService::class)->generateApiKey($church);
+
+        Livewire::actingAs($admin)
+            ->test(EditChurch::class, ['record' => $church->getKey()])
+            ->assertSuccessful()
+            ->assertSet('revealedApiKey', $plainKey)
+            ->assertSeeHtml(':type="showApiKey ? \'text\' : \'password\'"')
+            ->assertSee('Instance API key');
     }
 }

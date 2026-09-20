@@ -61,7 +61,7 @@ class ChurchInstanceAccessService
 
         $this->licenseKeyService->revokeAllForChurch($church);
 
-        $church->update(['instance_api_key_hash' => null]);
+        $church->clearInstanceApiKey();
 
         $this->auditLogService->log(
             actor: $actor ?? auth()->user(),

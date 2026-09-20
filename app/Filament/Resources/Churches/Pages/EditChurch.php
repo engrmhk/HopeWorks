@@ -30,8 +30,7 @@ class EditChurch extends EditRecord
     {
         parent::mount($record);
 
-        $stored = session('hopeworks.revealed_api_key.'.$this->getRecord()->getKey());
-        $this->revealedApiKey = is_string($stored) && $stored !== '' ? $stored : null;
+        $this->revealedApiKey = $this->plainInstanceApiKey();
         $this->jwtSecretInput = LicenseJwtSecret::configured();
     }
 
@@ -47,7 +46,7 @@ class EditChurch extends EditRecord
 
         Notification::make()
             ->title('Instance API key generated')
-            ->body('Copy it from the yellow box in Church connection below. It is shown only once.')
+            ->body('Hidden below. Use the eye icon to view it, then copy it into the church System page.')
             ->success()
             ->send();
     }
@@ -59,7 +58,7 @@ class EditChurch extends EditRecord
 
         Notification::make()
             ->title('Instance API key rotated')
-            ->body('The old key no longer works. Copy the new key from Church connection below.')
+            ->body('The old key no longer works. Use the eye icon to view the new key.')
             ->warning()
             ->send();
     }
@@ -69,7 +68,7 @@ class EditChurch extends EditRecord
         app(ChurchInstanceAccessService::class)->revokeApiKey($this->churchRecord());
         $this->revealedApiKey = null;
         session()->forget('hopeworks.revealed_api_key.'.$this->getRecord()->getKey());
-        $this->refreshFormData(['instance_api_key_hash']);
+        $this->refreshFormData(['instance_api_key_hash', 'instance_api_key']);
 
         Notification::make()
             ->title('Instance API key revoked')
@@ -82,7 +81,27 @@ class EditChurch extends EditRecord
         $this->revealedApiKey = $plainKey;
         session()->put('hopeworks.revealed_api_key.'.$this->getRecord()->getKey(), $plainKey);
         $this->getRecord()->refresh();
-        $this->refreshFormData(['instance_api_key_hash']);
+        $this->refreshFormData(['instance_api_key_hash', 'instance_api_key']);
+    }
+
+    protected function plainInstanceApiKey(): ?string
+    {
+        $church = $this->getRecord();
+        $fromDb = $church->instance_api_key;
+
+        if (is_string($fromDb) && $fromDb !== '') {
+            return $fromDb;
+        }
+
+        $stored = session('hopeworks.revealed_api_key.'.$church->getKey());
+
+        if (is_string($stored) && $stored !== '' && $church->verifyInstanceApiKey($stored)) {
+            $church->forceFill(['instance_api_key' => $stored])->save();
+
+            return $stored;
+        }
+
+        return null;
     }
 
     protected function churchRecord(): Church
