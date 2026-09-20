@@ -84,7 +84,7 @@ QUEUE_CONNECTION=database
 CACHE_STORE=database
 FILESYSTEM_DISK=public
 
-# MUST match every church app LICENSE_JWT_SECRET exactly
+# MUST match every church app LICENSE_JWT_SECRET exactly (32+ characters; not the Instance API key)
 LICENSE_JWT_SECRET=generate-a-long-random-secret-at-least-32-chars
 INTERNAL_SERVICE_SECRET=another-long-random-secret
 
@@ -236,6 +236,7 @@ Or in church admin → **System Diagnostics → Sync Now**.
 | 401 Unauthorized | Wrong `CONTROL_PLANE_API_KEY` or key revoked; regenerate on CP |
 | 403 deactivated | Church **Status** not Active on CP |
 | JWT / license invalid | `LICENSE_JWT_SECRET` mismatch between CP and church |
+| HTTP 503 `license_jwt_secret_too_short` | Control Plane `LICENSE_JWT_SECRET` is empty or under 32 characters. Set the same long secret on CP `.env` and church System → License JWT secret, then `php artisan config:clear` on CP. |
 | Connection refused / SSL | Wrong `CONTROL_PLANE_URL`; must be HTTPS public URL, no trailing slash issues |
 | Sync works but “old expiry” | Ensure both sides have the `current_period_end` heartbeat fields deployed |
 

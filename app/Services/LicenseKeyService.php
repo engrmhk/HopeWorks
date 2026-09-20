@@ -7,6 +7,7 @@ use App\Enums\SubscriptionStatus;
 use App\Models\Church;
 use App\Models\LicenseKey;
 use App\Models\Subscription;
+use App\Support\LicenseJwtSecret;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Illuminate\Support\Carbon;
@@ -39,7 +40,7 @@ class LicenseKeyService
             'exp' => $licenseExpiresAt->timestamp,
         ];
 
-        $jwt = JWT::encode($payload, config('license.jwt_secret'), 'HS256');
+        $jwt = JWT::encode($payload, LicenseJwtSecret::signingKey(), 'HS256');
 
         return LicenseKey::create([
             'church_id' => $church?->id,
@@ -52,7 +53,7 @@ class LicenseKeyService
 
     public function decode(string $jwt): object
     {
-        return JWT::decode($jwt, new Key(config('license.jwt_secret'), 'HS256'));
+        return JWT::decode($jwt, new Key(LicenseJwtSecret::signingKey(), 'HS256'));
     }
 
     public function validateApiKey(?string $plainKey): ?Church

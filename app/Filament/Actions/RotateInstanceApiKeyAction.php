@@ -16,14 +16,23 @@ class RotateInstanceApiKeyAction
             ->icon('heroicon-o-arrow-path')
             ->color('warning')
             ->visible(fn (Church $record): bool => app(ChurchInstanceAccessService::class)->hasApiKey($record))
+            ->modalHeading('Rotate instance API key')
+            ->modalDescription('The current key stops working immediately. Paste the new key into Settings → System → Control Plane connection on the church app. Active license JWTs are revoked.')
+            ->modalSubmitActionLabel('Rotate key')
             ->requiresConfirmation()
-            ->modalDescription('This invalidates the current API key, revokes all active license JWTs, and issues a new key. The church app will stop syncing until you update its .env.')
-            ->action(function (Church $record, ChurchInstanceAccessService $accessService): void {
+            ->successNotification(null)
+            ->action(function (Church $record, ChurchInstanceAccessService $accessService, $livewire): void {
                 $plainKey = $accessService->rotateApiKey($record);
+
+                if (method_exists($livewire, 'revealInstanceConnection')) {
+                    $livewire->revealInstanceConnection($plainKey);
+
+                    return;
+                }
 
                 Notification::make()
                     ->title('Instance API key rotated')
-                    ->body("Update the church app's CONTROL_PLANE_API_KEY:\n\n{$plainKey}")
+                    ->body($plainKey)
                     ->warning()
                     ->persistent()
                     ->send();

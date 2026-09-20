@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enums\ChurchStatus;
+use App\Exceptions\LicenseJwtSecretTooShortException;
 use App\Http\Controllers\Controller;
 use App\Models\Church;
 use App\Services\LicenseKeyService;
 use App\Services\SubscriptionEnforcementService;
 use App\Services\TenantHealthService;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class HeartbeatController extends Controller
 {
@@ -57,7 +60,20 @@ class HeartbeatController extends Controller
         $church->forceFill(['last_heartbeat_at' => now()])->saveQuietly();
 
         $subscription = $this->subscriptionEnforcementService->evaluate($subscription);
-        $licenseKey = $this->licenseKeyService->issueForSubscription($subscription);
+
+        try {
+            $licenseKey = $this->licenseKeyService->issueForSubscription($subscription);
+        } catch (LicenseJwtSecretTooShortException|DomainException $e) {
+            Log::error('heartbeat.license_jwt_secret', [
+                'church_id' => $church->id,
+                'message' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => (new LicenseJwtSecretTooShortException)->getMessage(),
+                'code' => 'license_jwt_secret_too_short',
+            ], 503);
+        }
 
         return response()->json([
             'status' => $subscription->status->value,

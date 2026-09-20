@@ -8,6 +8,7 @@ use App\Enums\SubscriptionStatus;
 use App\Models\Church;
 use App\Models\Synod;
 use App\Services\ChurchInstanceAccessService;
+use App\Support\LicenseJwtSecret;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\TextEntry;
@@ -81,12 +82,21 @@ class ChurchForm
                     ]),
                 Section::make('Instance Access')
                     ->icon('heroicon-o-key')
-                    ->description('HopeWorks-church polls this control plane via POST /api/v1/heartbeat using the instance API key. Status and enforcement are delivered in the signed license JWT — there is no push.')
+                    ->description('Paste these values on the church app under Settings → System → Control Plane connection. The church pulls heartbeat; there is no push.')
                     ->visible(fn (?Church $record): bool => $record !== null)
                     ->columnSpanFull()
                     ->schema([
                         Grid::make(2)
                             ->schema([
+                                TextEntry::make('control_plane_url')
+                                    ->label('Control Plane URL')
+                                    ->copyable()
+                                    ->state(fn (): string => rtrim((string) config('app.url'), '/'))
+                                    ->helperText('Base URL only. Same field as the church System page.'),
+                                TextEntry::make('id')
+                                    ->label('Control Plane church ID')
+                                    ->copyable()
+                                    ->helperText('Optional. Copy the numeric ID into Control Plane church ID on the church app.'),
                                 TextEntry::make('api_key_status')
                                     ->label('Instance API Key')
                                     ->badge()
@@ -96,9 +106,15 @@ class ChurchForm
                                     ->state(fn (?Church $record): string => $record && app(ChurchInstanceAccessService::class)->hasApiKey($record)
                                         ? 'Configured'
                                         : 'Not configured')
-                                    ->helperText(fn (?Church $record): string => $record && app(ChurchInstanceAccessService::class)->hasApiKey($record)
-                                        ? 'Plain key is only shown when generated or rotated.'
-                                        : 'Generate an API key from the API Key header menu.'),
+                                    ->helperText('Generate or rotate from the API Key menu. The plain key is shown once in a copy dialog that matches the church form.'),
+                                TextEntry::make('jwt_secret_status')
+                                    ->label('License JWT secret')
+                                    ->badge()
+                                    ->color(fn (): string => LicenseJwtSecret::isReady() ? 'success' : 'danger')
+                                    ->state(fn (): string => LicenseJwtSecret::isReady()
+                                        ? 'Set ('.strlen(LicenseJwtSecret::configured()).' characters)'
+                                        : 'Too short / missing')
+                                    ->helperText(LicenseJwtSecret::operatorMessage()),
                                 TextEntry::make('last_license_issued')
                                     ->label('Last License Issued')
                                     ->icon('heroicon-m-clock')

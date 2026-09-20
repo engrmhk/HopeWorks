@@ -122,6 +122,25 @@ class HeartbeatTest extends TestCase
         ]);
     }
 
+    public function test_short_jwt_secret_returns_503_without_exception_trace(): void
+    {
+        config(['license.jwt_secret' => '']);
+
+        $response = $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$this->apiKey,
+        ]);
+
+        $response
+            ->assertStatus(503)
+            ->assertJsonPath('code', 'license_jwt_secret_too_short')
+            ->assertJsonMissing(['exception', 'file', 'trace']);
+
+        $this->assertStringContainsString(
+            'The Instance API key is not the JWT secret.',
+            (string) $response->json('message'),
+        );
+    }
+
     public function test_invalid_api_key_is_rejected(): void
     {
         $response = $this->postJson('/api/v1/heartbeat', [], [

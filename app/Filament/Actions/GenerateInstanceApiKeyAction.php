@@ -16,14 +16,22 @@ class GenerateInstanceApiKeyAction
             ->icon('heroicon-o-key')
             ->color('success')
             ->visible(fn (Church $record): bool => ! app(ChurchInstanceAccessService::class)->hasApiKey($record))
-            ->requiresConfirmation()
-            ->modalDescription('Generate an API key for this church. The HopeWorks-church instance uses it as a Bearer token when calling /api/v1/heartbeat. Copy the key now — it cannot be shown again.')
-            ->action(function (Church $record, ChurchInstanceAccessService $accessService): void {
+            ->modalHeading('Generate instance API key')
+            ->modalDescription('This creates a one-time key for Settings → System → Control Plane connection on the church app. Copy it in the next step — it cannot be shown again.')
+            ->modalSubmitActionLabel('Generate key')
+            ->successNotification(null)
+            ->action(function (Church $record, ChurchInstanceAccessService $accessService, $livewire): void {
                 $plainKey = $accessService->generateApiKey($record);
+
+                if (method_exists($livewire, 'revealInstanceConnection')) {
+                    $livewire->revealInstanceConnection($plainKey);
+
+                    return;
+                }
 
                 Notification::make()
                     ->title('Instance API key generated')
-                    ->body("Copy this key into the church app's .env as CONTROL_PLANE_API_KEY:\n\n{$plainKey}")
+                    ->body($plainKey)
                     ->success()
                     ->persistent()
                     ->send();
