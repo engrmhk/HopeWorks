@@ -25,6 +25,23 @@ class SupportTicketResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = SupportTicket::query()->awaitingStaffReply()->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'danger';
+    }
+
+    public static function getNavigationBadgeTooltip(): string|\Illuminate\Contracts\Support\Htmlable|null
+    {
+        return 'Tickets waiting for a staff reply';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

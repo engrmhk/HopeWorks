@@ -4,6 +4,9 @@ namespace Tests\Feature;
 
 use App\Enums\SupportTicketPriority;
 use App\Enums\SupportTicketStatus;
+use App\Filament\Resources\SupportTickets\SupportTicketResource;
+use App\Filament\Widgets\AwaitingSupportTickets;
+use App\Filament\Widgets\HopeWorksOverviewStats;
 use App\Models\Church;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
@@ -41,6 +44,7 @@ class SupportTicketApiTest extends TestCase
 
     public function test_church_can_create_and_fetch_ticket_thread(): void
     {
+        $admin = User::factory()->create();
         $spy = Mockery::spy(MailMessageProvider::class);
         $this->app->instance(MailMessageProvider::class, $spy);
 
@@ -71,6 +75,12 @@ class SupportTicketApiTest extends TestCase
 
         $spy->shouldHaveReceived('send')
             ->withArgs(fn (string $to) => $to === 'ops@hopeworks.test');
+
+        $this->assertSame('1', SupportTicketResource::getNavigationBadge());
+        $this->assertSame('danger', SupportTicketResource::getNavigationBadgeColor());
+
+        $this->assertSame(1, $admin->unreadNotifications()->count());
+        $this->assertStringContainsString('Need help', (string) $admin->unreadNotifications()->first()?->data['body']);
     }
 
     public function test_church_cannot_read_another_churchs_ticket(): void
@@ -130,5 +140,62 @@ class SupportTicketApiTest extends TestCase
         ], [
             'Authorization' => 'Bearer wrong',
         ])->assertUnauthorized();
+    }
+
+    public function test_dashboard_lists_tickets_waiting_for_staff(): void
+    {
+        $admin = User::factory()->create(['is_super_admin' => true]);
+
+        $ticket = SupportTicket::create([
+            'church_id' => $this->church->id,
+            'subject' => 'Need a callback',
+            'status' => SupportTicketStatus::Open,
+            'priority' => SupportTicketPriority::Urgent,
+        ]);
+
+        SupportTicketMessage::create([
+            'support_ticket_id' => $ticket->id,
+            'is_staff' => false,
+            'body' => 'Please call the office.',
+        ]);
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(AwaitingSupportTickets::class)
+            ->assertSuccessful()
+            ->assertSee('Need a callback')
+            ->assertSee('Support Church');
+
+        \Livewire\Livewire::actingAs($admin)
+            ->test(HopeWorksOverviewStats::class)
+            ->assertSuccessful()
+            ->assertSee('Support tickets');
+    }
+
+    public function test_staff_reply_clears_awaiting_badge(): void
+    {
+        $ticket = SupportTicket::create([
+            'church_id' => $this->church->id,
+            'subject' => 'Wifi down',
+            'status' => SupportTicketStatus::Open,
+            'priority' => SupportTicketPriority::High,
+        ]);
+
+        SupportTicketMessage::create([
+            'support_ticket_id' => $ticket->id,
+            'is_staff' => false,
+            'body' => 'Internet is out.',
+        ]);
+
+        $this->assertSame('1', SupportTicketResource::getNavigationBadge());
+
+        SupportTicketMessage::create([
+            'support_ticket_id' => $ticket->id,
+            'is_staff' => true,
+            'body' => 'We are looking into it.',
+        ]);
+
+        $ticket->update(['status' => SupportTicketStatus::InProgress]);
+
+        $this->assertNull(SupportTicketResource::getNavigationBadge());
     }
 }

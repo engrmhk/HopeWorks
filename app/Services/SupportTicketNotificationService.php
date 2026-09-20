@@ -2,12 +2,15 @@
 
 namespace App\Services;
 
+use App\Filament\Resources\SupportTickets\SupportTicketResource;
 use App\Models\Church;
 use App\Models\SupportTicket;
 use App\Models\SupportTicketMessage;
 use App\Models\User;
 use App\Services\Communications\MessageProviderManager;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Filament\Actions\Action;
+use Filament\Notifications\Events\DatabaseNotificationsSent;
+use Filament\Notifications\Notification;
 
 class SupportTicketNotificationService
 {
@@ -17,6 +20,8 @@ class SupportTicketNotificationService
 
     public function notifyStaffOfNewTicket(SupportTicket $ticket): void
     {
+        $this->notifyStaffInAdmin($ticket);
+
         $to = config('hopeworks.messaging.staff_notify_to');
 
         if (! is_string($to) || $to === '') {
@@ -31,6 +36,41 @@ class SupportTicketNotificationService
             "Church: ".($ticket->church?->name ?? 'n/a')."\nPriority: {$ticket->priority->value}\n\nOpen in Control Plane admin to reply.",
             ['type' => 'support_ticket_created', 'ticket_id' => $ticket->id],
         );
+    }
+
+    protected function notifyStaffInAdmin(SupportTicket $ticket): void
+    {
+        $users = User::query()->get();
+
+        if ($users->isEmpty()) {
+            return;
+        }
+
+        $ticket->loadMissing('church');
+
+        try {
+            $url = SupportTicketResource::getUrl('edit', ['record' => $ticket]);
+        } catch (\Throwable) {
+            $url = url('/admin/support-tickets/'.$ticket->id.'/edit');
+        }
+
+        foreach ($users as $user) {
+            $user->notifyNow(
+                Notification::make()
+                    ->title('New support ticket #'.$ticket->id)
+                    ->body(($ticket->church?->name ?? 'Church').': '.$ticket->subject)
+                    ->icon('heroicon-o-lifebuoy')
+                    ->actions([
+                        Action::make('open')
+                            ->label('Open ticket')
+                            ->button()
+                            ->url($url),
+                    ])
+                    ->toDatabase()
+            );
+
+            DatabaseNotificationsSent::dispatch($user);
+        }
     }
 
     public function notifyChurchOfStaffReply(SupportTicket $ticket, SupportTicketMessage $message): void

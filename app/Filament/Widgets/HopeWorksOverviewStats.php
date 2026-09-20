@@ -3,8 +3,10 @@
 namespace App\Filament\Widgets;
 
 use App\Enums\SubscriptionStatus;
+use App\Filament\Resources\SupportTickets\SupportTicketResource;
 use App\Models\Church;
 use App\Models\Subscription;
+use App\Models\SupportTicket;
 use App\Models\Synod;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -34,6 +36,8 @@ class HopeWorksOverviewStats extends StatsOverviewWidget
             ->get()
             ->sum(fn (Subscription $subscription): float => (float) ($subscription->plan?->price ?? 0));
 
+        $awaitingTickets = SupportTicket::query()->awaitingStaffReply()->count();
+
         return [
             Stat::make('Total Churches', Church::count())
                 ->description('Registered tenant churches')
@@ -53,6 +57,11 @@ class HopeWorksOverviewStats extends StatsOverviewWidget
             Stat::make('MRR', '$'.number_format($mrr, 2))
                 ->description('Monthly recurring revenue')
                 ->icon('heroicon-o-currency-dollar'),
+            Stat::make('Support tickets', $awaitingTickets)
+                ->description($awaitingTickets === 1 ? 'Waiting for a reply' : 'Waiting for a reply')
+                ->icon('heroicon-o-lifebuoy')
+                ->color($awaitingTickets > 0 ? 'danger' : 'gray')
+                ->url(SupportTicketResource::getUrl()),
         ];
     }
 }
