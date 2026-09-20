@@ -142,7 +142,8 @@ class ChurchInstanceAccessTest extends TestCase
             ->test(EditChurch::class, ['record' => $church->getKey()])
             ->assertSuccessful()
             ->assertSet('revealedApiKey', $plainKey)
-            ->assertSeeHtml(':type="showApiKey ? \'text\' : \'password\'"')
+            ->assertSeeHtml('type="password"')
+            ->assertSeeHtml('x-bind:type="showApiKey ? \'text\' : \'password\'"')
             ->assertSee('Instance API key');
     }
 }

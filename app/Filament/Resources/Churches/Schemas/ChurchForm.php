@@ -81,8 +81,10 @@ class ChurchForm
                     ->description('Paste into church Settings → System.')
                     ->visible(fn (?Church $record): bool => $record !== null)
                     ->columnSpanFull()
+                    ->columns(1)
                     ->schema([
                         View::make('filament.churches.instance-connection')
+                            ->columnSpanFull()
                             ->viewData(function (?Church $record, $livewire): array {
                                 return [
                                     'church' => $record,

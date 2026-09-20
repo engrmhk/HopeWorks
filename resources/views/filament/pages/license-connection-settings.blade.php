@@ -1,7 +1,9 @@
 <x-filament-panels::page>
-    @include('filament.churches.instance-connection', [
-        'church' => null,
-        'revealedApiKey' => null,
-        'showChurchFields' => false,
-    ])
+    <div class="w-full max-w-none">
+        @include('filament.churches.instance-connection', [
+            'church' => null,
+            'revealedApiKey' => null,
+            'showChurchFields' => false,
+        ])
+    </div>
 </x-filament-panels::page>
