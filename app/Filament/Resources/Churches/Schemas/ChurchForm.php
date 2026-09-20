@@ -7,12 +7,8 @@ use App\Enums\EnforcementPolicy;
 use App\Enums\SubscriptionStatus;
 use App\Models\Church;
 use App\Models\Synod;
-use App\Services\ChurchInstanceAccessService;
-use App\Support\LicenseJwtSecret;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -80,46 +76,19 @@ class ChurchForm
                                 'policy' => $record?->subscription?->enforcement_policy,
                             ]),
                     ]),
-                Section::make('Instance Access')
+                Section::make('Church connection')
                     ->icon('heroicon-o-key')
-                    ->description('Paste these values on the church app under Settings → System → Control Plane connection. The church pulls heartbeat; there is no push.')
+                    ->description('Copy into church Settings → System. Generate the Instance API key here; the JWT secret is shared (Control Plane .env and church System).')
                     ->visible(fn (?Church $record): bool => $record !== null)
                     ->columnSpanFull()
                     ->schema([
-                        Grid::make(2)
-                            ->schema([
-                                TextEntry::make('control_plane_url')
-                                    ->label('Control Plane URL')
-                                    ->copyable()
-                                    ->state(fn (): string => rtrim((string) config('app.url'), '/'))
-                                    ->helperText('Base URL only. Same field as the church System page.'),
-                                TextEntry::make('id')
-                                    ->label('Control Plane church ID')
-                                    ->copyable()
-                                    ->helperText('Optional. Copy the numeric ID into Control Plane church ID on the church app.'),
-                                TextEntry::make('api_key_status')
-                                    ->label('Instance API Key')
-                                    ->badge()
-                                    ->color(fn (?Church $record): string => $record && app(ChurchInstanceAccessService::class)->hasApiKey($record)
-                                        ? 'success'
-                                        : 'danger')
-                                    ->state(fn (?Church $record): string => $record && app(ChurchInstanceAccessService::class)->hasApiKey($record)
-                                        ? 'Configured'
-                                        : 'Not configured')
-                                    ->helperText('Generate or rotate from the API Key menu. The plain key is shown once in a copy dialog that matches the church form.'),
-                                TextEntry::make('jwt_secret_status')
-                                    ->label('License JWT secret')
-                                    ->badge()
-                                    ->color(fn (): string => LicenseJwtSecret::isReady() ? 'success' : 'danger')
-                                    ->state(fn (): string => LicenseJwtSecret::isReady()
-                                        ? 'Set ('.strlen(LicenseJwtSecret::configured()).' characters)'
-                                        : 'Too short / missing')
-                                    ->helperText(LicenseJwtSecret::operatorMessage()),
-                                TextEntry::make('last_license_issued')
-                                    ->label('Last License Issued')
-                                    ->icon('heroicon-m-clock')
-                                    ->state(fn (?Church $record): string => optional($record?->licenseKeys()->latest('issued_at')->first()?->issued_at)?->toDateTimeString() ?? 'Never'),
-                            ]),
+                        View::make('filament.churches.instance-connection')
+                            ->viewData(function (?Church $record, $livewire): array {
+                                return [
+                                    'church' => $record,
+                                    'revealedApiKey' => $livewire->revealedApiKey ?? null,
+                                ];
+                            }),
                     ]),
             ]);
     }
