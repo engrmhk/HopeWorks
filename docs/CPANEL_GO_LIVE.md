@@ -84,8 +84,9 @@ QUEUE_CONNECTION=database
 CACHE_STORE=database
 FILESYSTEM_DISK=public
 
-# MUST match every church app LICENSE_JWT_SECRET exactly (32+ characters; not the Instance API key)
-LICENSE_JWT_SECRET=generate-a-long-random-secret-at-least-32-chars
+# Optional. Leave empty and generate the JWT secret in admin after migrate
+# (Settings → License connection). Env is only a fallback if admin has no secret yet.
+LICENSE_JWT_SECRET=
 INTERNAL_SERVICE_SECRET=another-long-random-secret
 
 AFFILIATION_CHANGE_ENABLED=false
@@ -142,8 +143,8 @@ chmod -R ug+rwx storage bootstrap/cache
 3. Create a **Plan**, then a **Synod**, then a **Church**
 4. Set Church **Status = Active**
 5. Set **Instance URL** to the future church app URL (e.g. `https://1stchurch.yourdomain.com`)
-6. Header → **API Key → Generate API Key** — copy the plain key once
-7. Note: keep `LICENSE_JWT_SECRET` for the church `.env`
+6. Open the church → **Church connection** → **Generate API key** — copy the yellow `hw_…` key once
+7. **Settings → License connection** (or the same Church connection box) → **Generate JWT secret** — copy that value into the church System page (not the Instance API key)
 
 ### 2.7 Stripe webhook (when billing goes live)
 
@@ -182,8 +183,8 @@ DB_PASSWORD=...
 CONTROL_PLANE_URL=https://control.yourdomain.com
 CONTROL_PLANE_API_KEY=paste-the-key-from-cp-generate-api-key
 
-# MUST be identical to Control Plane LICENSE_JWT_SECRET
-LICENSE_JWT_SECRET=same-secret-as-control-plane
+# Optional if you paste the JWT in church admin Settings → System
+LICENSE_JWT_SECRET=
 
 SESSION_DRIVER=database
 QUEUE_CONNECTION=database
@@ -235,8 +236,8 @@ Or in church admin → **System Diagnostics → Sync Now**.
 |---------|-----|
 | 401 Unauthorized | Wrong `CONTROL_PLANE_API_KEY` or key revoked; regenerate on CP |
 | 403 deactivated | Church **Status** not Active on CP |
-| JWT / license invalid | `LICENSE_JWT_SECRET` mismatch between CP and church |
-| HTTP 503 `license_jwt_secret_too_short` | Control Plane `LICENSE_JWT_SECRET` is empty or under 32 characters. Set the same long secret on CP `.env` and church System → License JWT secret, then `php artisan config:clear` on CP. |
+| JWT / license invalid | JWT secret on church System page does not match Control Plane admin (Settings → License connection) |
+| HTTP 503 `license_jwt_secret_too_short` | Generate or paste the JWT secret in Control Plane **Settings → License connection** (or Church connection). Copy the same value to church System → License JWT secret. |
 | Connection refused / SSL | Wrong `CONTROL_PLANE_URL`; must be HTTPS public URL, no trailing slash issues |
 | Sync works but “old expiry” | Ensure both sides have the `current_period_end` heartbeat fields deployed |
 
@@ -246,7 +247,7 @@ Or in church admin → **System Diagnostics → Sync Now**.
 
 1. [ ] CP: Church created, Active, plan/subscription set, `instance_url` filled  
 2. [ ] CP: Instance API key generated; plain key stored in church secrets manager / `.env`  
-3. [ ] Church: `CONTROL_PLANE_URL` + `CONTROL_PLANE_API_KEY` + matching `LICENSE_JWT_SECRET`  
+3. [ ] Church: paste Control Plane URL, Instance API key, and JWT secret from Control Plane admin (Church connection or Settings → License connection)  
 4. [ ] Both: cron `schedule:run` every minute  
 5. [ ] Church: Sync Now / `hopeworks:sync-license` succeeds  
 6. [ ] CP: heartbeat timestamp visible  
@@ -262,7 +263,7 @@ Or in church admin → **System Diagnostics → Sync Now**.
 - Rotate admin password after seed  
 - Prefer different DB users per app  
 - Keep `AFFILIATION_CHANGE_ENABLED=false` until joint verification is signed off  
-- Same `LICENSE_JWT_SECRET` on CP + all churches (treat as a shared signing secret; rotate carefully with downtime/re-sync)  
+- Same JWT secret on Control Plane admin and every church System page (rotate carefully; every church must paste the new value)  
 
 ---
 
@@ -283,8 +284,8 @@ Ignored by `.gitignore` (and should stay off the server zip):
 ## 7. Minimal “first live church” path
 
 1. Deploy Control Plane → migrate/seed → cron  
-2. Create Plan + Church + Generate API Key  
-3. Deploy one HopeWorks-church → migrate → same JWT secret + API key + CP URL → cron  
+2. Create Plan + Church + Generate API key; Generate JWT secret in admin  
+3. Deploy one HopeWorks-church → migrate → paste CP URL, API key, and JWT secret on church System → cron  
 4. Sync license → confirm heartbeat  
 5. Only then invite church staff  
 

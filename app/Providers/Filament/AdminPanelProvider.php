@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\BrandingSettings;
+use App\Filament\Pages\LicenseConnectionSettings;
 use App\Filament\Pages\TenantHealthDashboard;
 use App\Services\Themes\ThemeCompiler;
 use App\Services\Themes\ThemeResolver;
@@ -60,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
                 TenantHealthDashboard::class,
+                LicenseConnectionSettings::class,
                 BrandingSettings::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')

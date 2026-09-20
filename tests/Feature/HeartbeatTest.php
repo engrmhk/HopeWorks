@@ -6,11 +6,14 @@ use App\Enums\EnforcementPolicy;
 use App\Enums\SubscriptionStatus;
 use App\Models\Church;
 use App\Models\Plan;
+use App\Models\PlatformSetting;
 use App\Models\Subscription;
 use App\Models\Synod;
 use App\Services\LicenseKeyService;
+use App\Support\LicenseJwtSecret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class HeartbeatTest extends TestCase
@@ -122,8 +125,23 @@ class HeartbeatTest extends TestCase
         ]);
     }
 
+    public function test_heartbeat_uses_database_jwt_secret_when_env_is_empty(): void
+    {
+        Cache::forget(LicenseJwtSecret::CACHE_KEY);
+        PlatformSetting::query()->delete();
+        config(['license.jwt_secret' => '']);
+
+        LicenseJwtSecret::save(str_repeat('a', 40));
+
+        $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$this->apiKey,
+        ])->assertOk();
+    }
+
     public function test_short_jwt_secret_returns_503_without_exception_trace(): void
     {
+        Cache::forget(LicenseJwtSecret::CACHE_KEY);
+        PlatformSetting::query()->delete();
         config(['license.jwt_secret' => '']);
 
         $response = $this->postJson('/api/v1/heartbeat', [], [

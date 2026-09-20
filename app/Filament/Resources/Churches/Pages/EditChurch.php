@@ -8,9 +8,11 @@ use App\Filament\Actions\ForceStatusCheckAction;
 use App\Filament\Actions\ImpersonateUserAction;
 use App\Filament\Actions\InvalidateCachedLicenseAction;
 use App\Filament\Actions\RecordManualPaymentAction;
+use App\Filament\Concerns\ManagesLicenseJwtSecret;
 use App\Filament\Resources\Churches\ChurchResource;
 use App\Models\Church;
 use App\Services\ChurchInstanceAccessService;
+use App\Support\LicenseJwtSecret;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -19,6 +21,7 @@ use Filament\Support\Enums\Width;
 
 class EditChurch extends EditRecord
 {
+    use ManagesLicenseJwtSecret;
     protected static string $resource = ChurchResource::class;
 
     public ?string $revealedApiKey = null;
@@ -29,6 +32,7 @@ class EditChurch extends EditRecord
 
         $stored = session('hopeworks.revealed_api_key.'.$this->getRecord()->getKey());
         $this->revealedApiKey = is_string($stored) && $stored !== '' ? $stored : null;
+        $this->jwtSecretInput = LicenseJwtSecret::configured();
     }
 
     public function revealInstanceConnection(string $plainKey): void
