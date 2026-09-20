@@ -38,7 +38,7 @@ class ProvisionNewClientAction
 
                 Notification::make()
                     ->title('Client provisioned')
-                    ->body("Subdomain: {$church->subdomain}\n\nInstance API key (copy to church .env):\n{$apiKey}")
+                    ->body("Subdomain: {$church->subdomain}\n\nInstance API key (paste into church Settings → System):\n{$apiKey}")
                     ->success()
                     ->persistent()
                     ->send();

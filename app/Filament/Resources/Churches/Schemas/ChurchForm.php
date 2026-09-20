@@ -53,7 +53,7 @@ class ChurchForm
                         TextInput::make('instance_url')
                             ->url()
                             ->maxLength(255)
-                            ->helperText('URL where the HopeWorks-church instance is deployed.'),
+                            ->helperText('HopeWorks-church deploy URL. Co-hosted synod members use the same URL as the synod host — each still needs its own API key.'),
                     ]),
                 Section::make('Subscription')
                     ->icon('heroicon-o-receipt-percent')

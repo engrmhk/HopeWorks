@@ -23,6 +23,10 @@ class ChurchesTable
                     ->label('Synod')
                     ->sortable()
                     ->placeholder('Independent'),
+                TextColumn::make('instance_url')
+                    ->label('Instance URL')
+                    ->limit(40)
+                    ->toggleable(),
                 TextColumn::make('subdomain')
                     ->searchable(),
                 TextColumn::make('status')

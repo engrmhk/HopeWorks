@@ -2,7 +2,7 @@
 
 Hope Works' internal admin application. There is only ever **one instance** of this app — it is never forked or given to a client. It manages the directory of all synods and churches, billing/subscriptions, licensing, and cross-client reporting.
 
-**Related repo:** [HopeWorks-church](https://github.com/engrmhk/HopeWorks-church) — the forkable per-client application deployed once per Synod or Independent Church.
+**Related repo:** [HopeWorks-church](https://github.com/engrmhk/HopeWorks-church) — the client application. Deploy once per **standalone church** or once per **synod** (one shared database with many member churches). Every member church still has its own Control Plane record and Instance API key.
 
 ## Stack
 

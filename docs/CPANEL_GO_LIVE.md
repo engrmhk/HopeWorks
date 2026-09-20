@@ -7,14 +7,26 @@
 | Piece | Repo | How many | Role |
 |-------|------|----------|------|
 | Control Plane | `HopeWorks` | **One** | Admin at `/admin`, billing, licenses, directory of churches |
-| Church app | `HopeWorks-church` | **One per Synod or Independent Church** | Day-to-day church CMS; pulls license via heartbeat |
+| Church app (standalone) | `HopeWorks-church` | **One deploy + one DB** | Independent parish; **one** Control Plane church record |
+| Church app (synod co-hosted) | `HopeWorks-church` | **One deploy + one shared DB** | Synod host + member churches; **one Control Plane church record and Instance API key per member church** |
 
 ```
-Church apps ──POST /api/v1/heartbeat──► Control Plane
-             ◄── license JWT + status ──
+Each church record ──POST /api/v1/heartbeat (its own API key)──► Control Plane
+                     ◄── license JWT + status ──
 ```
 
 Churches **pull**; the Control Plane does **not** push into church instances.
+
+**Shared vs per-church**
+
+| Value | Shared? | Where on Control Plane | Where on church app |
+|-------|---------|------------------------|---------------------|
+| Instance API key (`hw_…`) | No — one per church | Church connection | Settings → System (not `.env`) |
+| Control Plane church ID | No — one per church | Church connection | Settings → System |
+| JWT secret | Yes — one platform secret | Settings → License connection | Settings → System (child churches may inherit from the synod host if left empty) |
+| Control Plane URL | Yes | Church connection | Settings → System (children may inherit) |
+
+Do not put URL / API key / JWT in the church `.env` when using Settings → System.
 
 ---
 
@@ -158,13 +170,17 @@ Events: checkout / invoice / subscription payment events your CP already handles
 
 ## 3. Deploy each Church app (HopeWorks-church)
 
-Repeat per Synod or Independent Church.
+**Standalone:** one deploy, one database, one Control Plane church.
+
+**Synod co-hosted:** one deploy, **one shared database**, many church rows in that database. On Control Plane still create **one church + subscription + Instance API key per congregation**. Set every member’s `instance_url` to the **same** synod app URL.
 
 ### 3.1 Files + document root
 
 Same pattern: app root + document root = `public/`.
 
 ### 3.2 Church `.env`
+
+Leave Control Plane fields empty when using **Settings → System** (recommended). Use `KEY=value` only — never `KEY: value`.
 
 ```env
 APP_NAME="1st Church"
@@ -179,11 +195,9 @@ DB_DATABASE=church_1_db
 DB_USERNAME=...
 DB_PASSWORD=...
 
-# Point at the live Control Plane
-CONTROL_PLANE_URL=https://control.yourdomain.com
-CONTROL_PLANE_API_KEY=paste-the-key-from-cp-generate-api-key
-
-# Optional if you paste the JWT in church admin Settings → System
+# Leave empty when using Settings → System:
+CONTROL_PLANE_URL=
+CONTROL_PLANE_API_KEY=
 LICENSE_JWT_SECRET=
 
 SESSION_DRIVER=database
@@ -210,19 +224,26 @@ php artisan route:cache
 * * * * * cd /home/USER/apps/hopeworks-church-1 && /usr/local/bin/php artisan schedule:run >> /dev/null 2>&1
 ```
 
-This runs `hopeworks:sync-license` hourly (among other schedules).
+This runs `hopeworks:sync-license` hourly (among other schedules). On a synod install, sync **each** member church (`hopeworks:sync-license --church={id}`).
 
 ### 3.5 Pair / verify connection
 
-On the church server:
+On Control Plane, open the church → **Church connection** and copy:
+
+1. Control Plane URL  
+2. Church ID (must match the church app’s Control Plane church ID)  
+3. Instance API key (`hw_…`)  
+4. JWT secret (same value for every church; generate once under **Settings → License connection**)
+
+On the church app → **Settings → System** → paste those values → **Sync Now**. Child churches on a synod may leave URL/JWT empty to inherit from the synod host; **each child still needs its own Instance API key**.
+
+On the church server you can also run:
 
 ```bash
 php artisan hopeworks:sync-license
-# or with church id if multi-tenant instance:
+# synod / multi-church instance:
 php artisan hopeworks:sync-license --church=1
 ```
-
-Or in church admin → **System Diagnostics → Sync Now**.
 
 **Success looks like:**
 
@@ -245,14 +266,15 @@ Or in church admin → **System Diagnostics → Sync Now**.
 
 ## 4. Connecting checklist (one church)
 
-1. [ ] CP: Church created, Active, plan/subscription set, `instance_url` filled  
-2. [ ] CP: Instance API key generated; plain key stored in church secrets manager / `.env`  
-3. [ ] Church: paste Control Plane URL, Instance API key, and JWT secret from Control Plane admin (Church connection or Settings → License connection)  
-4. [ ] Both: cron `schedule:run` every minute  
-5. [ ] Church: Sync Now / `hopeworks:sync-license` succeeds  
-6. [ ] CP: heartbeat timestamp visible  
-7. [ ] Change subscription period / status on CP → church Sync Now → diagnostics show billing `current_period_end`  
-8. [ ] (Optional) Branding on each side independently  
+1. [ ] CP: Church created, Active, plan/subscription set  
+2. [ ] CP: `instance_url` = this church’s app URL (synod members: **same URL as the synod host**)  
+3. [ ] CP: Instance API key generated; paste into church **Settings → System** (not `.env`)  
+4. [ ] Church: paste Control Plane URL, **Church ID**, Instance API key, and JWT secret (or inherit URL/JWT from synod host)  
+5. [ ] Both: cron `schedule:run` every minute  
+6. [ ] Church: Sync Now / `hopeworks:sync-license` succeeds  
+7. [ ] CP: heartbeat timestamp visible  
+8. [ ] Change subscription period / status on CP → church Sync Now → diagnostics show billing `current_period_end`  
+9. [ ] (Optional) Branding on each side independently  
 
 ---
 
@@ -263,7 +285,7 @@ Or in church admin → **System Diagnostics → Sync Now**.
 - Rotate admin password after seed  
 - Prefer different DB users per app  
 - Keep `AFFILIATION_CHANGE_ENABLED=false` until joint verification is signed off  
-- Same JWT secret on Control Plane admin and every church System page (rotate carefully; every church must paste the new value)  
+- Same JWT secret on Control Plane admin and church System pages (synod children may inherit the host’s copy; rotate carefully)  
 
 ---
 
@@ -285,7 +307,7 @@ Ignored by `.gitignore` (and should stay off the server zip):
 
 1. Deploy Control Plane → migrate/seed → cron  
 2. Create Plan + Church + Generate API key; Generate JWT secret in admin  
-3. Deploy one HopeWorks-church → migrate → paste CP URL, API key, and JWT secret on church System → cron  
+3. Deploy HopeWorks-church (standalone **or** synod co-host) → migrate → paste CP URL, **Church ID**, API key, and JWT on Settings → System → cron   
 4. Sync license → confirm heartbeat  
 5. Only then invite church staff  
 

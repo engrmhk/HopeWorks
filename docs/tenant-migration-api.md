@@ -13,6 +13,8 @@ Filament UI: Change Affiliation wizard (gated by `AFFILIATION_CHANGE_ENABLED`)
 
 Auth: `Authorization: Bearer {INTERNAL_SERVICE_SECRET}`
 
+`church_id` in these payloads is the **Control Plane church id** (Church connection → Church ID). Store that same id on the church app row. For a synod co-hosted database, export/import/archive still target **one member church at a time**.
+
 ### Dry-run contract
 
 ```json
