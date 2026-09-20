@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Filament\Concerns\ManagesLicenseJwtSecret;
 use App\Support\LicenseJwtSecret;
 use Filament\Pages\Page;
+use Filament\Support\Enums\Width;
 
 class LicenseConnectionSettings extends Page
 {
@@ -19,6 +20,10 @@ class LicenseConnectionSettings extends Page
     protected static ?int $navigationSort = 5;
 
     protected static ?string $title = 'License connection';
+
+    protected ?string $subheading = 'Shared JWT secret used to sign church licenses. Copy the same value into each church System page.';
+
+    protected Width|string|null $maxWidth = Width::Full;
 
     protected string $view = 'filament.pages.license-connection-settings';
 
