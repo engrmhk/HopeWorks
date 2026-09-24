@@ -22,9 +22,13 @@ Churches **pull**; the Control Plane does **not** push into church instances.
 | Value | Shared? | Where on Control Plane | Where on church app |
 |-------|---------|------------------------|---------------------|
 | Instance API key (`hw_…`) | No — one per church | Church connection | Settings → System (not `.env`) |
+| Synod API key (`hw_…`) | No — one per synod (optional) | Synod → Synod connection | Synod host Settings → System |
 | Control Plane church ID | No — one per church | Church connection | Settings → System |
 | JWT secret | Yes — one platform secret | Settings → License connection | Settings → System (child churches may inherit from the synod host if left empty) |
 | Control Plane URL | Yes | Church connection | Settings → System (children may inherit) |
+| Synod disable / banner | Yes — one synod record | Synod → Access & banner | Delivered to **every** member church on next heartbeat |
+
+The synod itself is a **free** account (no subscription). Member churches keep their own billing. Mark the synod Control Center church as **Synod host (free)** if it should heartbeat without a plan.
 
 Do not put URL / API key / JWT in the church `.env` when using Settings → System.
 
@@ -172,7 +176,7 @@ Events: checkout / invoice / subscription payment events your CP already handles
 
 **Standalone:** one deploy, one database, one Control Plane church.
 
-**Synod co-hosted:** one deploy, **one shared database**, many church rows in that database. On Control Plane still create **one church + subscription + Instance API key per congregation**. Set every member’s `instance_url` to the **same** synod app URL.
+**Synod co-hosted:** one deploy, **one shared database**, many church rows in that database. Create the **Synod** (free — no subscription) and use **Access & banner** plus **Synod connection**. Create **one church + Instance API key per congregation**. Member churches still need their own paid subscription. The synod Control Center church can be marked **Synod host (free)** and skip billing. Set every member’s `instance_url` to the **same** synod app URL.
 
 ### 3.1 Files + document root
 

@@ -24,19 +24,27 @@ class AuthenticateChurchApiKey
 
         $church = $this->licenseKeyService->validateApiKey($token);
 
-        if ($church === null) {
-            return response()->json(['message' => 'Invalid API key.'], 401);
+        if ($church !== null) {
+            if ($church->status === ChurchStatus::Inactive) {
+                return response()->json([
+                    'message' => 'This church instance is deactivated.',
+                    'church_status' => $church->status->value,
+                ], 403);
+            }
+
+            $request->attributes->set('church', $church);
+
+            return $next($request);
         }
 
-        if ($church->status === ChurchStatus::Inactive) {
-            return response()->json([
-                'message' => 'This church instance is deactivated.',
-                'church_status' => $church->status->value,
-            ], 403);
+        $synod = $this->licenseKeyService->validateSynodApiKey($token);
+
+        if ($synod !== null) {
+            $request->attributes->set('synod', $synod);
+
+            return $next($request);
         }
 
-        $request->attributes->set('church', $church);
-
-        return $next($request);
+        return response()->json(['message' => 'Invalid API key.'], 401);
     }
 }

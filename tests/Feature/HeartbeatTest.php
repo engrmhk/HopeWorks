@@ -167,4 +167,73 @@ class HeartbeatTest extends TestCase
 
         $response->assertUnauthorized();
     }
+
+    public function test_inactive_synod_locks_member_churches_and_sends_notice(): void
+    {
+        $this->church->synod->update([
+            'status' => \App\Enums\SynodStatus::Inactive,
+            'platform_notice' => 'Synod paused by platform.',
+        ]);
+
+        $response = $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$this->apiKey,
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('enforcement_policy', EnforcementPolicy::FullLock->value)
+            ->assertJsonPath('synod_status', 'inactive')
+            ->assertJsonPath('platform_notices.0.message', 'Synod paused by platform.');
+
+        $payload = app(LicenseKeyService::class)->decode($response->json('license_key'));
+        $this->assertSame(EnforcementPolicy::FullLock->value, $payload->enforcement_policy);
+    }
+
+    public function test_synod_banner_is_sent_to_member_churches(): void
+    {
+        $this->church->synod->update([
+            'enforcement_policy' => EnforcementPolicy::ReadOnly,
+            'platform_notice' => 'Please update your giving reports.',
+            'notice_severity' => \App\Enums\NoticeSeverity::Warning,
+        ]);
+
+        $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$this->apiKey,
+        ])->assertOk()
+            ->assertJsonPath('enforcement_policy', EnforcementPolicy::ReadOnly->value)
+            ->assertJsonPath('platform_notices.0.scope', 'synod')
+            ->assertJsonPath('platform_notices.0.message', 'Please update your giving reports.');
+    }
+
+    public function test_synod_host_church_can_heartbeat_without_subscription(): void
+    {
+        $hostKey = 'hw_synod_host_key';
+        $host = Church::create([
+            'synod_id' => $this->church->synod_id,
+            'name' => 'Synod HQ',
+            'subdomain' => 'synod-hq',
+            'is_synod_host' => true,
+            'instance_api_key_hash' => Church::hashApiKey($hostKey),
+        ]);
+
+        $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$hostKey,
+        ])->assertOk()
+            ->assertJsonPath('church_id', $host->id)
+            ->assertJsonPath('plan_id', null)
+            ->assertJsonPath('status', SubscriptionStatus::Active->value);
+    }
+
+    public function test_synod_api_key_heartbeats_without_subscription(): void
+    {
+        $synodKey = 'hw_synod_connection_key';
+        $synod = $this->church->synod;
+        $synod->setInstanceApiKey($synodKey);
+
+        $this->postJson('/api/v1/heartbeat', [], [
+            'Authorization' => 'Bearer '.$synodKey,
+        ])->assertOk()
+            ->assertJsonPath('church_id', null)
+            ->assertJsonPath('synod_id', $synod->id)
+            ->assertJsonPath('synod_status', 'active');
+    }
 }

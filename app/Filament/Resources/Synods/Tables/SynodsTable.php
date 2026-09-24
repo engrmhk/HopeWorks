@@ -21,6 +21,15 @@ class SynodsTable
                     ->searchable(),
                 TextColumn::make('status')
                     ->badge(),
+                TextColumn::make('enforcement_policy')
+                    ->label('Banner / lock')
+                    ->placeholder('None')
+                    ->toggleable(),
+                TextColumn::make('last_heartbeat_at')
+                    ->label('Last sync')
+                    ->since()
+                    ->placeholder('Never')
+                    ->toggleable(),
                 TextColumn::make('contact_email')
                     ->searchable(),
                 TextColumn::make('churches_count')

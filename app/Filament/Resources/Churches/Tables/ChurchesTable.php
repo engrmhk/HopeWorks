@@ -23,6 +23,12 @@ class ChurchesTable
                     ->label('Synod')
                     ->sortable()
                     ->placeholder('Independent'),
+                TextColumn::make('is_synod_host')
+                    ->label('Synod host')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Free host' : '')
+                    ->placeholder('')
+                    ->toggleable(),
                 TextColumn::make('instance_url')
                     ->label('Instance URL')
                     ->limit(40)

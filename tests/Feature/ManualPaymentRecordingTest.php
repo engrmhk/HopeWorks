@@ -33,7 +33,7 @@ class ManualPaymentRecordingTest extends TestCase
         $church = $subscription->church;
         $church->setInstanceApiKey($this->apiKey);
 
-        $paymentDate = Carbon::parse('2026-07-15');
+        $paymentDate = now()->startOfDay();
 
         $result = app(ManualPaymentService::class)->record($subscription, [
             'amount' => 99,

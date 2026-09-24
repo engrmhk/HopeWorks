@@ -13,6 +13,7 @@ class Church extends Model
 {
     protected $fillable = [
         'synod_id',
+        'is_synod_host',
         'name',
         'contact_email',
         'billing_email',
@@ -31,6 +32,7 @@ class Church extends Model
     {
         return [
             'status' => ChurchStatus::class,
+            'is_synod_host' => 'boolean',
             'instance_api_key' => 'encrypted',
             'last_heartbeat_at' => 'datetime',
             'data_retention_until' => 'datetime',

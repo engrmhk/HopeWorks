@@ -9,6 +9,7 @@ use App\Models\Church;
 use App\Models\Synod;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
@@ -39,6 +40,9 @@ class ChurchForm
                             ->options(fn () => Synod::query()->orderBy('name')->pluck('name', 'id'))
                             ->searchable()
                             ->nullable(),
+                        Toggle::make('is_synod_host')
+                            ->label('Synod host (free)')
+                            ->helperText('No subscription required. Use for the synod Control Center church. Member churches still need their own paid subscription.'),
                         Select::make('status')
                             ->options(ChurchStatus::class)
                             ->required()

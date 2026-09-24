@@ -44,3 +44,15 @@ Heartbeat is **client-initiated**. The Control Plane cannot push a new license i
 |-------|---------|
 | `subscriptions.status_evaluated_at` | Last time CP ran the transition check (scheduler / heartbeat / Force Status Check) |
 | `churches.last_heartbeat_at` | Last successful `POST /api/v1/heartbeat` from that instance |
+
+## Synod (free) overlay
+
+Synods do **not** need a subscription. Control Plane can still disable a synod or attach a banner/notice. Member church heartbeats merge that overlay:
+
+| Synod setting | Effect on every church under it |
+|---------------|----------------------------------|
+| Status = Inactive | `enforcement_policy = full_lock` + critical notice |
+| Banner / lock set | Stricter of synod vs church subscription policy |
+| Notification / banner text | `platform_notices[]` on heartbeat + JWT |
+
+Churches learn this on the **next** Sync Now / heartbeat. Saving synod access settings revokes cached member licenses.
