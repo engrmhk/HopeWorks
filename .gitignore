@@ -36,6 +36,11 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# cPanel / Apache runtime (do not commit)
+/.well-known/
+error_log
+/public/error_log
+
 # Local tooling / packaging (do not commit)
 composer.phar
 composer-setup.php
