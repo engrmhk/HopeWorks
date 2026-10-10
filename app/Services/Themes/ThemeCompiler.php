@@ -15,7 +15,7 @@ class ThemeCompiler
 
     public function cacheKey(): string
     {
-        return 'theme.css.v1.control-plane';
+        return 'theme.css.v2.control-plane';
     }
 
     public function pdfCacheKey(): string

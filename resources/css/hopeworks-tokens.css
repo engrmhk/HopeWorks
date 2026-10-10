@@ -231,10 +231,15 @@
 }
 
 .fi-simple-header .fi-logo,
-.fi-simple-header .fi-logo img {
+.fi-simple-header .fi-logo img,
+.hw-brand-logo,
+.fi-logo .hw-brand-logo,
+.fi-sidebar-header .hw-brand-logo,
+.fi-topbar .hw-brand-logo {
+  display: block;
   height: 2.75rem !important;
   width: auto;
-  max-width: 11rem;
+  max-width: 12rem;
   object-fit: contain;
 }
 

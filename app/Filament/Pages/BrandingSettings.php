@@ -89,7 +89,7 @@ class BrandingSettings extends Page implements HasForms
                             ->directory('branding/logos')
                             ->visibility('public')
                             ->maxFiles(1)
-                            ->helperText('Sidebar and invoices.'),
+                            ->helperText('Sidebar and invoices. Click Save Theme after upload.'),
                         FileUpload::make('logos.login_logo')
                             ->label('Login logo')
                             ->image()
@@ -97,7 +97,7 @@ class BrandingSettings extends Page implements HasForms
                             ->directory('branding/logos')
                             ->visibility('public')
                             ->maxFiles(1)
-                            ->helperText('Falls back to the main logo if empty.'),
+                            ->helperText('Falls back to the main logo if empty. Click Save Theme after upload.'),
                         FileUpload::make('logos.favicon')
                             ->label('Favicon')
                             ->image()

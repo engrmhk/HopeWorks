@@ -116,7 +116,11 @@ class AdminPanelProvider extends PanelProvider
         $url = BrandingAsset::publicUrl($logoPath);
 
         if ($url !== null) {
-            return $url;
+            $name = e($this->resolveBrandName());
+
+            return new HtmlString(
+                '<img src="'.e($url).'" alt="'.$name.'" class="hw-brand-logo">'
+            );
         }
 
         return new HtmlString(view('filament.hooks.brand-logo')->render());

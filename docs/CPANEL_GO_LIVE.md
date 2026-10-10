@@ -136,6 +136,8 @@ php artisan route:cache
 php artisan view:cache
 ```
 
+Logos uploaded in Branding & Theme are served at `/branding/asset/...` so they still show if `public/storage` cannot be created on cPanel. After deploy: `php artisan route:clear && php artisan config:clear` (or recache routes) so that route is registered.
+
 ### 2.4 Cron (required)
 
 cPanel → Cron Jobs → every minute:

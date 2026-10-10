@@ -25,6 +25,26 @@ class BrandingAsset
             return null;
         }
 
+        if (str_starts_with($path, 'data:')) {
+            return $path;
+        }
+
+        $path = strtok($path, '?') ?: $path;
+
+        if (preg_match('#(?:https?:)?//[^/]+/storage/(.+)$#i', $path, $matches)) {
+            $path = $matches[1];
+        } elseif (str_starts_with($path, '/storage/')) {
+            $path = substr($path, strlen('/storage/'));
+        } elseif (str_starts_with($path, 'storage/')) {
+            $path = substr($path, strlen('storage/'));
+        }
+
+        $path = ltrim(str_replace('\\', '/', $path), '/');
+
+        if ($path === '' || str_contains($path, '..')) {
+            return null;
+        }
+
         return $path;
     }
 
@@ -44,7 +64,9 @@ class BrandingAsset
             return null;
         }
 
-        return Storage::disk('public')->url($path);
+        return '/branding/asset/'.collect(explode('/', $path))
+            ->map(static fn (string $segment): string => rawurlencode($segment))
+            ->implode('/');
     }
 
     public static function dataUri(mixed $path): ?string

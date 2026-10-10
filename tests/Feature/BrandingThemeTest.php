@@ -24,6 +24,9 @@ class BrandingThemeTest extends TestCase
     {
         $this->assertSame('branding/logos/a.png', BrandingAsset::normalizePath(['branding/logos/a.png']));
         $this->assertSame('branding/logos/a.png', BrandingAsset::normalizePath('branding/logos/a.png'));
+        $this->assertSame('branding/logos/a.png', BrandingAsset::normalizePath('/storage/branding/logos/a.png'));
+        $this->assertSame('branding/logos/a.png', BrandingAsset::normalizePath('https://example.test/storage/branding/logos/a.png'));
+        $this->assertNull(BrandingAsset::normalizePath('branding/../.env'));
         $this->assertNull(BrandingAsset::normalizePath(''));
         $this->assertNull(BrandingAsset::normalizePath('Array'));
         $this->assertNull(BrandingAsset::normalizePath(null));
@@ -143,12 +146,48 @@ class BrandingThemeTest extends TestCase
         app(ThemeService::class)->saveTheme($theme, 'With logo', $config);
 
         $this->assertSame(
-            Storage::disk('public')->url('branding/logos/main.png'),
+            '/branding/asset/branding/logos/main.png',
             BrandingAsset::publicUrl($theme->fresh()->mergedConfig()['logos']['main_logo']),
         );
 
         Livewire::test(Login::class)
             ->assertSuccessful()
             ->assertSee('Welcome back');
+    }
+
+    public function test_branding_asset_is_served_without_storage_symlink(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/logos/main.png', 'png-bytes');
+
+        $this->get('/branding/asset/branding/logos/main.png')
+            ->assertOk();
+
+        $this->assertSame(
+            'png-bytes',
+            $this->get('/branding/asset/branding/logos/main.png')->streamedContent(),
+        );
+
+        $this->get('/branding/asset/branding/../.env')->assertNotFound();
+        $this->get('/branding/asset/other/file.png')->assertNotFound();
+    }
+
+    public function test_login_page_renders_uploaded_logo_from_branding_route(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/logos/main.png', 'png');
+
+        $theme = app(ThemeService::class)->ensureActiveTheme();
+        $config = ThemeDefaults::all();
+        $config['identity']['app_name'] = 'Hope Works';
+        $config['logos']['main_logo'] = 'branding/logos/main.png';
+        app(ThemeService::class)->saveTheme($theme, 'With logo', $config);
+        Cache::flush();
+
+        $this->get('/admin/login')
+            ->assertOk()
+            ->assertSee('/branding/asset/branding/logos/main.png', false)
+            ->assertSee('hw-brand-logo', false)
+            ->assertDontSee('HopeWorks logo');
     }
 }
