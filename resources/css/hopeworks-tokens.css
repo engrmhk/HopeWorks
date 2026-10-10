@@ -230,16 +230,30 @@
   text-align: center;
 }
 
-.fi-simple-header .fi-logo,
-.fi-simple-header .fi-logo img,
+.fi-sidebar-header,
+.fi-topbar {
+  min-height: 4.25rem;
+}
+
 .hw-brand-logo,
 .fi-logo .hw-brand-logo,
 .fi-sidebar-header .hw-brand-logo,
 .fi-topbar .hw-brand-logo {
   display: block;
-  height: 2.75rem !important;
+  height: 3.5rem !important;
   width: auto;
-  max-width: 12rem;
+  max-width: 15rem;
+  object-fit: contain;
+}
+
+.fi-simple-header .fi-logo,
+.fi-simple-header .fi-logo img,
+.fi-simple-header .hw-brand-logo,
+.hw-brand-logo-login {
+  display: block;
+  height: 5.75rem !important;
+  width: auto;
+  max-width: 18rem;
   object-fit: contain;
 }
 

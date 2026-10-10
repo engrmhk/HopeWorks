@@ -187,7 +187,30 @@ class BrandingThemeTest extends TestCase
         $this->get('/admin/login')
             ->assertOk()
             ->assertSee('/branding/asset/branding/logos/main.png', false)
-            ->assertSee('hw-brand-logo', false)
+            ->assertSee('hw-brand-logo-login', false)
             ->assertDontSee('HopeWorks logo');
+    }
+
+    public function test_branding_settings_preview_uses_branding_asset_url(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('branding/logos/main.png', 'png');
+
+        $admin = User::factory()->create(['is_super_admin' => true]);
+        $theme = app(ThemeService::class)->ensureActiveTheme($admin);
+        $config = ThemeDefaults::all();
+        $config['logos']['main_logo'] = 'branding/logos/main.png';
+        app(ThemeService::class)->saveTheme($theme, 'With logo', $config);
+        Cache::flush();
+
+        Livewire::actingAs($admin)
+            ->test(BrandingSettings::class)
+            ->assertSuccessful()
+            ->assertSee('Main logo');
+
+        $this->assertSame(
+            '/branding/asset/branding/logos/main.png',
+            BrandingAsset::publicUrl('branding/logos/main.png'),
+        );
     }
 }

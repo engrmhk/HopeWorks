@@ -39,7 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->login(Login::class)
             ->brandName(fn (): string => $this->resolveBrandName())
             ->brandLogo(fn (): string|HtmlString => $this->resolveBrandLogo())
-            ->brandLogoHeight('2.85rem')
+            ->brandLogoHeight('3.5rem')
             ->favicon(fn (): ?string => $this->resolveFavicon())
             ->colors(function (): array {
                 $status = StatusColorMap::resolvedStatusColors();
@@ -118,8 +118,10 @@ class AdminPanelProvider extends PanelProvider
         if ($url !== null) {
             $name = e($this->resolveBrandName());
 
+            $class = $isLogin ? 'hw-brand-logo hw-brand-logo-login' : 'hw-brand-logo';
+
             return new HtmlString(
-                '<img src="'.e($url).'" alt="'.$name.'" class="hw-brand-logo">'
+                '<img src="'.e($url).'" alt="'.$name.'" class="'.$class.'">'
             );
         }
 

@@ -64,6 +64,39 @@ class BrandingSettings extends Page implements HasForms
         $this->refreshPreviewCss();
     }
 
+    protected static function brandingImageUpload(string $name, string $directory): FileUpload
+    {
+        return FileUpload::make($name)
+            ->image()
+            ->disk('public')
+            ->directory($directory)
+            ->visibility('public')
+            ->maxFiles(1)
+            ->previewable()
+            ->openable()
+            ->imagePreviewHeight('140')
+            ->panelLayout(null)
+            ->getUploadedFileUsing(function (FileUpload $component, string $file, string|array|null $storedFileNames): ?array {
+                $disk = $component->getDisk();
+
+                if (! $disk->exists($file)) {
+                    return null;
+                }
+
+                $url = BrandingAsset::publicUrl($file) ?? $disk->url($file);
+                $name = is_array($storedFileNames)
+                    ? ($storedFileNames[$file] ?? basename($file))
+                    : ($storedFileNames ?? basename($file));
+
+                return [
+                    'name' => $name,
+                    'size' => $disk->size($file),
+                    'type' => $disk->mimeType($file) ?: 'image/png',
+                    'url' => $url,
+                ];
+            });
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -80,38 +113,20 @@ class BrandingSettings extends Page implements HasForms
                         TextInput::make('identity.copyright_url')->label('Copyright URL')->url()->maxLength(255),
                     ])->columns(2),
                 Section::make('Logos')
-                    ->description('Upload PNG or SVG. Re-save after upload if the preview looks stale.')
+                    ->description('Upload PNG or SVG. The image preview appears after Save Theme.')
                     ->schema([
-                        FileUpload::make('logos.main_logo')
+                        self::brandingImageUpload('logos.main_logo', 'branding/logos')
                             ->label('Main logo')
-                            ->image()
-                            ->disk('public')
-                            ->directory('branding/logos')
-                            ->visibility('public')
-                            ->maxFiles(1)
-                            ->helperText('Sidebar and invoices. Click Save Theme after upload.'),
-                        FileUpload::make('logos.login_logo')
+                            ->helperText('Sidebar, top bar, and invoices.'),
+                        self::brandingImageUpload('logos.login_logo', 'branding/logos')
                             ->label('Login logo')
-                            ->image()
-                            ->disk('public')
-                            ->directory('branding/logos')
-                            ->visibility('public')
-                            ->maxFiles(1)
-                            ->helperText('Falls back to the main logo if empty. Click Save Theme after upload.'),
-                        FileUpload::make('logos.favicon')
+                            ->helperText('Falls back to the main logo if empty.'),
+                        self::brandingImageUpload('logos.favicon', 'branding/favicons')
                             ->label('Favicon')
-                            ->image()
-                            ->disk('public')
-                            ->directory('branding/favicons')
-                            ->visibility('public')
-                            ->maxFiles(1),
-                        FileUpload::make('login_page.background_image')
+                            ->imagePreviewHeight('96'),
+                        self::brandingImageUpload('login_page.background_image', 'branding/login')
                             ->label('Login background')
-                            ->image()
-                            ->disk('public')
-                            ->directory('branding/login')
-                            ->visibility('public')
-                            ->maxFiles(1),
+                            ->imagePreviewHeight('160'),
                     ])->columns(2),
                 Section::make('Login page')
                     ->description('Heading, subtitle, and colors for /admin/login.')
