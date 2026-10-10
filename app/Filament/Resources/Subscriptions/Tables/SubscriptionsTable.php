@@ -30,10 +30,10 @@ class SubscriptionsTable
                 TextColumn::make('enforcement_policy')
                     ->badge(),
                 TextColumn::make('current_period_end')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A')
                     ->sortable(),
                 TextColumn::make('grace_started_at')
-                    ->dateTime()
+                    ->dateTime('M j, Y g:i A')
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([])
